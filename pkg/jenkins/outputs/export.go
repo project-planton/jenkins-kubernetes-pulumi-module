@@ -3,8 +3,8 @@ package outputs
 import (
 	"fmt"
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/commons/english/enums/englishword"
-	"github.com/plantoncloud/pulumi-stack-runner-go-sdk/pkg/name/output/custom"
-	puluminamekubeoutput "github.com/plantoncloud/pulumi-stack-runner-go-sdk/pkg/name/provider/kubernetes/output"
+	"github.com/plantoncloud/pulumi-blueprint-golang-commons/pkg/kubernetes/pulumikubernetesprovider"
+	"github.com/plantoncloud/pulumi-blueprint-golang-commons/pkg/pulumi/pulumicustomoutput"
 	kubernetescorev1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/core/v1"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
@@ -27,19 +27,19 @@ func Export(ctx *pulumi.Context) error {
 }
 
 func GetExternalHostnameOutputName() string {
-	return custom.Name("jenkins-kubernetes-external-hostname")
+	return pulumicustomoutput.Name("jenkins-kubernetes-external-hostname")
 }
 
 func GetInternalHostnameOutputName() string {
-	return custom.Name("jenkins-kubernetes-internal-hostname")
+	return pulumicustomoutput.Name("jenkins-kubernetes-internal-hostname")
 }
 
 func GetAdminPasswordSecretOutputName() string {
-	return custom.Name("jenkins-kubernetes-admin-password-secret-name")
+	return pulumicustomoutput.Name("jenkins-kubernetes-admin-password-secret-name")
 }
 
 func GetAdminUsernameOutputName() string {
-	return custom.Name("jenkins-kubernetes-admin-username")
+	return pulumicustomoutput.Name("jenkins-kubernetes-admin-username")
 }
 
 func getAdminUsername() string {
@@ -47,27 +47,27 @@ func getAdminUsername() string {
 }
 
 func GetKubeServiceNameOutputName() string {
-	return custom.Name("jenkins-kubernetes-kubernetes-service-name")
+	return pulumicustomoutput.Name("jenkins-kubernetes-kubernetes-service-name")
 }
 
 func GetKubeEndpointOutputName() string {
-	return custom.Name("jenkins-kubernetes-kubernetes-endpoint")
+	return pulumicustomoutput.Name("jenkins-kubernetes-kubernetes-endpoint")
 }
 
 func GetKubePortForwardCommandOutputName() string {
-	return custom.Name("jenkins-cluster-kube-port-forward-command")
+	return pulumicustomoutput.Name("jenkins-cluster-kube-port-forward-command")
 }
 
 func GetExternalLoadBalancerIp() string {
-	return custom.Name("jenkins-ingress-external-lb-ip")
+	return pulumicustomoutput.Name("jenkins-ingress-external-lb-ip")
 }
 
 func GetInternalLoadBalancerIp() string {
-	return custom.Name("jenkins-ingress-internal-lb-ip")
+	return pulumicustomoutput.Name("jenkins-ingress-internal-lb-ip")
 }
 
 func GetNamespaceNameOutputName() string {
-	return puluminamekubeoutput.Name(kubernetescorev1.Namespace{}, englishword.EnglishWord_namespace.String())
+	return pulumikubernetesprovider.PulumiOutputName(kubernetescorev1.Namespace{}, englishword.EnglishWord_namespace.String())
 }
 
 // getKubePortForwardCommand returns kubectl port-forward command that can be used by developers.
