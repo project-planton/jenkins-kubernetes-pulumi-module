@@ -13,7 +13,6 @@ type input struct {
 	kubeServiceName  string
 	containerSpec    *jenkinskubernetesmodel.JenkinsKubernetesSpecContainerSpec
 	customHelmValues map[string]string
-	labels           map[string]string
 }
 
 func extractInput(ctx *pulumi.Context) *input {
@@ -24,7 +23,6 @@ func extractInput(ctx *pulumi.Context) *input {
 		namespace:        ctxConfig.Status.AddedResources.Namespace,
 		containerSpec:    ctxConfig.Spec.ContainerSpec,
 		customHelmValues: ctxConfig.Spec.CustomHelmValues,
-		labels:           ctxConfig.Spec.Labels,
 		kubeServiceName:  ctxConfig.Spec.KubeServiceName,
 	}
 }
