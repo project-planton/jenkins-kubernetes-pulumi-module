@@ -1,14 +1,13 @@
 package outputs
 
 import (
-	jenkinskubernetescontextconfig "github.com/plantoncloud/jenkins-kubernetes-pulumi-blueprint/pkg/jenkins/contextstate"
-	pulumicommonsloadbalancerservice "github.com/plantoncloud/pulumi-blueprint-commons/pkg/kubernetes/loadbalancer/service"
+	jenkinskubernetescontextconfig "github.com/plantoncloud/jenkins-kubernetes-pulumi-module/pkg/jenkins/contextstate"
+	pulumicommonsloadbalancerservice "github.com/plantoncloud/pulumi-module-commons/pkg/kubernetes/loadbalancer/service"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
 const (
 	adminUsername = "admin"
-	JenkinsPort   = 8080
 )
 
 type input struct {
