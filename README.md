@@ -1,1 +1,1 @@
-# jenkins-kubernetes-pulumi-blueprint
+# jenkins-kubernetes-pulumi-module
