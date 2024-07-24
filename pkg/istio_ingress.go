@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"github.com/pkg/errors"
+	certmanagerv1 "github.com/plantoncloud/kubernetes-crd-pulumi-types/pkg/certmanager/certmanager/v1"
 	istiov1 "github.com/plantoncloud/kubernetes-crd-pulumi-types/pkg/istio/networking/v1"
 	kubernetescorev1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/core/v1"
 	metav1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/meta/v1"
@@ -15,8 +16,37 @@ const (
 
 func (s *ResourceStack) istioIngress(ctx *pulumi.Context, createdNamespace *kubernetescorev1.Namespace) error {
 	jenkinsKubernetes := s.Input.ApiResource
+	addedCertificate, err := certmanagerv1.NewCertificate(ctx,
+		"ingress-certificate", &certmanagerv1.CertificateArgs{
+			Metadata: metav1.ObjectMetaArgs{
+				Name:      pulumi.String(jenkinsKubernetes.Metadata.Id),
+				Namespace: createdNamespace.Metadata.Name(),
+				Labels:    pulumi.ToStringMap(s.KubernetesLabels),
+			},
+			Spec: certmanagerv1.CertificateSpecArgs{
+				DnsNames: pulumi.StringArray{
+					pulumi.Sprintf("%s.%s", jenkinsKubernetes.Metadata.Id,
+						jenkinsKubernetes.Spec.Ingress.EndpointDomainName),
+					pulumi.Sprintf("%s-internal.%s", jenkinsKubernetes.Metadata.Id,
+						jenkinsKubernetes.Spec.Ingress.EndpointDomainName),
+				},
+				SecretName: nil,
+				IssuerRef: certmanagerv1.CertificateSpecIssuerRefArgs{
+					Kind: pulumi.String("ClusterIssuer"),
+					//note: a ClusterIssuer resource should have already exist on the kubernetes-cluster.
+					//this is typically taken care of by the kubernetes cluster administrator.
+					//if the kubernetes-cluster is created using Planton Cloud, then the cluster-issuer name will be
+					//same as the ingress-domain-name as long as the same ingress-domain-name is added to the list of
+					//ingress-domain-names for the GkeCluster/EksCluster/AksCluster spec.
+					Name: pulumi.String(jenkinsKubernetes.Spec.Ingress.EndpointDomainName),
+				},
+			},
+		})
+	if err != nil {
+		return errors.Wrap(err, "error creating certificate")
+	}
 
-	_, err := istiov1.NewGateway(ctx, jenkinsKubernetes.Metadata.Id, &istiov1.GatewayArgs{
+	_, err = istiov1.NewGateway(ctx, jenkinsKubernetes.Metadata.Id, &istiov1.GatewayArgs{
 		Metadata: metav1.ObjectMetaArgs{
 			Name:      pulumi.String(jenkinsKubernetes.Metadata.Id),
 			Namespace: createdNamespace.Metadata.Name(),
@@ -43,7 +73,7 @@ func (s *ResourceStack) istioIngress(ctx *pulumi.Context, createdNamespace *kube
 							jenkinsKubernetes.Spec.Ingress.EndpointDomainName),
 					},
 					Tls: &istiov1.GatewaySpecServersTlsArgs{
-						CredentialName: pulumi.String("coming-soon"), //todo: create a certificate for jenkins-server
+						CredentialName: addedCertificate.Spec.SecretName(),
 						Mode:           pulumi.String(v1.ServerTLSSettings_SIMPLE.String()),
 					},
 				},
