@@ -16,7 +16,7 @@ const (
 	GatewayIdentifierHttp  = "jenkins-http"
 )
 
-func (s *ResourceStack) istioIngress(ctx *pulumi.Context, addedNamespace *kubernetescorev1.Namespace) error {
+func (s *ResourceStack) istioIngress(ctx *pulumi.Context, createdNamespace *kubernetescorev1.Namespace) error {
 	jenkinsKubernetes := s.Input.ApiResource
 
 	_, err := istiov1.NewGateway(ctx, jenkinsKubernetes.Metadata.Id, &istiov1.GatewayArgs{
@@ -24,7 +24,7 @@ func (s *ResourceStack) istioIngress(ctx *pulumi.Context, addedNamespace *kubern
 		Kind:       pulumi.String("Gateway"),
 		Metadata: metav1.ObjectMetaArgs{
 			Name:      pulumi.String(jenkinsKubernetes.Metadata.Id),
-			Namespace: addedNamespace.Metadata.Name(),
+			Namespace: createdNamespace.Metadata.Name(),
 			Labels:    pulumi.ToStringMap(s.KubernetesLabels),
 		},
 		Spec: istiov1.GatewaySpecArgs{
@@ -72,7 +72,7 @@ func (s *ResourceStack) istioIngress(ctx *pulumi.Context, addedNamespace *kubern
 			Kind:       pulumi.String("VirtualService"),
 			Metadata: metav1.ObjectMetaArgs{
 				Name:      pulumi.String(jenkinsKubernetes.Metadata.Id),
-				Namespace: addedNamespace.Metadata.Name(),
+				Namespace: createdNamespace.Metadata.Name(),
 				Labels:    pulumi.ToStringMap(s.KubernetesLabels),
 			},
 			Spec: istiov1.VirtualServiceSpecArgs{

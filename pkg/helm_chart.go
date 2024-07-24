@@ -18,32 +18,32 @@ const (
 )
 
 func (s *ResourceStack) helmChart(ctx *pulumi.Context,
-	addedNamespace *kubernetescorev1.Namespace, addedAdminPasswordSecret *kubernetescorev1.Secret) error {
+	createdNamespace *kubernetescorev1.Namespace, createdAdminPasswordSecret *kubernetescorev1.Secret) error {
 
 	jenkinsKubernetes := s.Input.ApiResource
 
-	helmValues := getHelmValues(jenkinsKubernetes, addedAdminPasswordSecret)
+	helmValues := getHelmValues(jenkinsKubernetes, createdAdminPasswordSecret)
 
 	// Deploying a Locust Helm chart from the Helm repository.
 	_, err := helmv3.NewChart(ctx, jenkinsKubernetes.Metadata.Id, helmv3.ChartArgs{
 		Chart:     pulumi.String(CharName),
 		Version:   pulumi.String(ChartVersion), // Use the Helm chart version you want to install
-		Namespace: addedNamespace.Metadata.Name().Elem(),
+		Namespace: createdNamespace.Metadata.Name().Elem(),
 		Values:    helmValues,
 		//if you need to add the repository, you can specify `repo url`:
 		FetchArgs: helmv3.FetchArgs{
 			Repo: pulumi.String(ChartRepoUrl),
 		},
-	}, pulumi.Parent(addedNamespace))
+	}, pulumi.Parent(createdNamespace))
 	if err != nil {
-		return errors.Wrap(err, "failed to add helm chart")
+		return errors.Wrap(err, "failed to create helm chart")
 	}
 
 	return nil
 }
 
 func getHelmValues(jenkinsKubernetes *model.JenkinsKubernetes,
-	addedAdminPasswordSecret *kubernetescorev1.Secret) pulumi.Map {
+	createdAdminPasswordSecret *kubernetescorev1.Secret) pulumi.Map {
 	// https://github.com/jenkinsci/helm-charts/blob/main/charts/jenkins/values.yaml
 	var baseValues = pulumi.Map{
 		"fullnameOverride": pulumi.String(jenkinsKubernetes.Metadata.Name),
@@ -54,7 +54,7 @@ func getHelmValues(jenkinsKubernetes *model.JenkinsKubernetes,
 			"resources": containerresources.ConvertToPulumiMap(jenkinsKubernetes.Spec.Container.Resources),
 			"admin": pulumi.Map{
 				"passwordKey":    pulumi.String(adminPasswordKey),
-				"existingSecret": addedAdminPasswordSecret.Metadata.Name(),
+				"existingSecret": createdAdminPasswordSecret.Metadata.Name(),
 			},
 		},
 	}

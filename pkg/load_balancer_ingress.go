@@ -14,14 +14,14 @@ const (
 	InternalLoadBalancerServiceName = "ingress-internal-lb"
 )
 
-func (s *ResourceStack) loadBalancerIngress(ctx *pulumi.Context, addedNamespace *kubernetescorev1.Namespace) error {
-	addedExternalService, err := kubernetescorev1.NewService(ctx,
+func (s *ResourceStack) loadBalancerIngress(ctx *pulumi.Context, createdNamespace *kubernetescorev1.Namespace) error {
+	createdExternalService, err := kubernetescorev1.NewService(ctx,
 		ExternalLoadBalancerServiceName,
 		&kubernetescorev1.ServiceArgs{
 			Metadata: &kubernetesmetav1.ObjectMetaArgs{
 				Name:      pulumi.String(ExternalLoadBalancerServiceName),
-				Namespace: addedNamespace.Metadata.Name(),
-				Labels:    addedNamespace.Metadata.Labels(),
+				Namespace: createdNamespace.Metadata.Name(),
+				Labels:    createdNamespace.Metadata.Labels(),
 				Annotations: pulumi.StringMap{
 					"planton.cloud/endpoint-domain-name":        pulumi.String(i.endpointDomainName),
 					"external-dns.alpha.kubernetes.io/hostname": pulumi.String(hostname)}},
@@ -37,21 +37,21 @@ func (s *ResourceStack) loadBalancerIngress(ctx *pulumi.Context, addedNamespace 
 				},
 				Selector: pulumi.StringMap{
 					"app.kubernetes.io/component": pulumi.String("jenkins-controller"),
-					"app.kubernetes.io/instance":  addedNamespace.Metadata.Name().Elem(),
+					"app.kubernetes.io/instance":  createdNamespace.Metadata.Name().Elem(),
 				},
 			},
-		}, pulumi.Parent(addedNamespace))
+		}, pulumi.Parent(createdNamespace))
 	if err != nil {
 		return errors.Wrapf(err, "failed to create external load balancer service")
 	}
 
-	addedInternalService, err := kubernetescorev1.NewService(ctx,
+	createdInternalService, err := kubernetescorev1.NewService(ctx,
 		InternalLoadBalancerServiceName,
 		&kubernetescorev1.ServiceArgs{
 			Metadata: &kubernetesmetav1.ObjectMetaArgs{
 				Name:      pulumi.String(InternalLoadBalancerServiceName),
-				Namespace: addedNamespace.Metadata.Name(),
-				Labels:    addedNamespace.Metadata.Labels(),
+				Namespace: createdNamespace.Metadata.Name(),
+				Labels:    createdNamespace.Metadata.Labels(),
 				Annotations: pulumi.StringMap{
 					"cloud.google.com/load-balancer-type":       pulumi.String("Internal"),
 					"planton.cloud/endpoint-domain-name":        pulumi.String(i.endpointDomainName),
@@ -70,18 +70,18 @@ func (s *ResourceStack) loadBalancerIngress(ctx *pulumi.Context, addedNamespace 
 				},
 				Selector: pulumi.StringMap{
 					"app.kubernetes.io/component": pulumi.String("jenkins-controller"),
-					"app.kubernetes.io/instance":  addedNamespace.Metadata.Name().Elem(),
+					"app.kubernetes.io/instance":  createdNamespace.Metadata.Name().Elem(),
 				},
 			},
-		}, pulumi.Parent(addedNamespace))
+		}, pulumi.Parent(createdNamespace))
 	if err != nil {
 		return errors.Wrapf(err, "failed to create external load balancer service")
 	}
 
 	ctx.Export(GetExternalLoadBalancerIp(),
-		pulumi.String(pulumicommonsloadbalancerservice.GetIpAddress(addedExternalService)))
+		pulumi.String(pulumicommonsloadbalancerservice.GetIpAddress(createdExternalService)))
 	ctx.Export(GetInternalLoadBalancerIp(),
-		pulumi.String(pulumicommonsloadbalancerservice.GetIpAddress(addedInternalService)))
+		pulumi.String(pulumicommonsloadbalancerservice.GetIpAddress(createdInternalService)))
 	return nil
 }
 

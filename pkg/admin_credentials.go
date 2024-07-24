@@ -16,11 +16,11 @@ const (
 )
 
 func (s *ResourceStack) adminPassword(ctx *pulumi.Context,
-	addedNamespace *kubernetescorev1.Namespace) (*kubernetescorev1.Secret, error) {
+	createdNamespace *kubernetescorev1.Namespace) (*kubernetescorev1.Secret, error) {
 
 	jenkinsKubernetes := s.Input.ApiResource
 
-	addedRandomPassword, err := random.NewRandomPassword(ctx, "admin-password",
+	createdRandomPassword, err := random.NewRandomPassword(ctx, "admin-password",
 		&random.RandomPasswordArgs{
 			Length:     pulumi.Int(12),
 			Special:    pulumi.Bool(true),
@@ -37,12 +37,12 @@ func (s *ResourceStack) adminPassword(ctx *pulumi.Context,
 	}
 
 	// Encode the password in Base64
-	base64Password := addedRandomPassword.Result.ApplyT(func(p string) (string, error) {
+	base64Password := createdRandomPassword.Result.ApplyT(func(p string) (string, error) {
 		return base64.StdEncoding.EncodeToString([]byte(p)), nil
 	}).(pulumi.StringOutput)
 
 	// Create or update the secret
-	addedAdminPasswordSecret, err := kubernetescorev1.NewSecret(ctx, jenkinsKubernetes.Metadata.Name,
+	createdAdminPasswordSecret, err := kubernetescorev1.NewSecret(ctx, jenkinsKubernetes.Metadata.Name,
 		&kubernetescorev1.SecretArgs{
 			Metadata: &metav1.ObjectMetaArgs{
 				Name:      pulumi.String(jenkinsKubernetes.Metadata.Name),
@@ -51,12 +51,12 @@ func (s *ResourceStack) adminPassword(ctx *pulumi.Context,
 			Data: pulumi.StringMap{
 				adminPasswordKey: base64Password,
 			},
-		}, pulumi.Parent(addedNamespace))
+		}, pulumi.Parent(createdNamespace))
 
 	ctx.Export(GetAdminUsernameOutputName(), pulumi.String(adminUsername))
-	ctx.Export(GetAdminPasswordSecretOutputName(), addedAdminPasswordSecret.Metadata.Name())
+	ctx.Export(GetAdminPasswordSecretOutputName(), createdAdminPasswordSecret.Metadata.Name())
 
-	return addedAdminPasswordSecret, nil
+	return createdAdminPasswordSecret, nil
 }
 
 func GetAdminUsernameOutputName() string {

@@ -13,28 +13,32 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
+const (
+	JenkinsPort = 8080
+)
+
 type ResourceStack struct {
 	WorkspaceDir     string
 	Input            *model.JenkinsKubernetesStackInput
 	KubernetesLabels map[string]string
 }
 
-const (
-	JenkinsPort = 8080
-)
-
 func (s *ResourceStack) Resources(ctx *pulumi.Context) error {
+	//create kubernetes-provider from the credential in the stack-input
 	kubernetesProvider, err := pulumikubernetesprovider.GetWithKubernetesClusterCredential(ctx,
 		s.Input.KubernetesClusterCredential)
 	if err != nil {
 		return errors.Wrap(err, "failed to setup gcp provider")
 	}
 
+	//decide on the namespace to be used
 	namespaceName := s.namespace()
 
+	//create a new descriptive variable for the api-resource in the input.
 	jenkinsKubernetes := s.Input.ApiResource
 
-	addedNamespace, err := kubernetescorev1.NewNamespace(ctx, namespaceName, &kubernetescorev1.NamespaceArgs{
+	//create namespace resource
+	createdNamespace, err := kubernetescorev1.NewNamespace(ctx, namespaceName, &kubernetescorev1.NamespaceArgs{
 		ApiVersion: pulumi.String("v1"),
 		Kind:       pulumi.String("namespace"),
 		Metadata: metav1.ObjectMetaPtrInput(&metav1.ObjectMetaArgs{
@@ -44,18 +48,18 @@ func (s *ResourceStack) Resources(ctx *pulumi.Context) error {
 	}, pulumi.Timeouts(&pulumi.CustomTimeouts{Create: "5s", Update: "5s", Delete: "5s"}),
 		pulumi.Provider(kubernetesProvider))
 	if err != nil {
-		return errors.Wrapf(err, "failed to add %s namespace", namespaceName)
+		return errors.Wrapf(err, "failed to create %s namespace", namespaceName)
 	}
 
-	ctx.Export(GetNamespaceNameOutputName(), addedNamespace.Metadata.Name())
+	ctx.Export(GetNamespaceNameOutputName(), createdNamespace.Metadata.Name())
 
-	addedAdminPasswordSecret, err := s.adminPassword(ctx, addedNamespace)
+	createdAdminPasswordSecret, err := s.adminPassword(ctx, createdNamespace)
 	if err != nil {
-		return errors.Wrap(err, "failed to add admin password resources")
+		return errors.Wrap(err, "failed to create admin password resources")
 	}
 
-	if err := s.helmChart(ctx, addedNamespace, addedAdminPasswordSecret); err != nil {
-		return errors.Wrap(err, "failed to add helm-chart resources")
+	if err := s.helmChart(ctx, createdNamespace, createdAdminPasswordSecret); err != nil {
+		return errors.Wrap(err, "failed to create helm-chart resources")
 	}
 
 	ctx.Export(GetKubePortForwardCommandOutputName(), pulumi.String(getKubePortForwardCommand()))
@@ -70,18 +74,21 @@ func (s *ResourceStack) Resources(ctx *pulumi.Context) error {
 
 	switch jenkinsKubernetes.Spec.Ingress.IngressType {
 	case kubernetesworkloadingresstype.KubernetesWorkloadIngressType_load_balancer:
-		if err := s.loadBalancerIngress(ctx, addedNamespace); err != nil {
-			return errors.Wrap(err, "failed to add load-balancer ingress resources")
+		if err := s.loadBalancerIngress(ctx, createdNamespace); err != nil {
+			return errors.Wrap(err, "failed to create load-balancer ingress resources")
 		}
 	case kubernetesworkloadingresstype.KubernetesWorkloadIngressType_ingress_controller:
-		if err := s.istioIngress(ctx, addedNamespace); err != nil {
-			return errors.Wrap(err, "failed to add istio ingress resources")
+		if err := s.istioIngress(ctx, createdNamespace); err != nil {
+			return errors.Wrap(err, "failed to create istio ingress resources")
 		}
 	}
 
 	return nil
 }
 
+// namespace returns the namespace to be used for creating all kubernetes resources.
+// namespace is required in other functions that create different resources.
+// instead of passing the hardcoded namespace name to each of those functions as input, we make it a struct function.
 func (s *ResourceStack) namespace() string {
 	return s.Input.ApiResource.Metadata.Id
 }
