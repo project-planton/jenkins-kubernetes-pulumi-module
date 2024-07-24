@@ -2,7 +2,7 @@ package pkg
 
 import (
 	"github.com/pkg/errors"
-	istiov1 "github.com/plantoncloud/kubernetes-crd-pulumi-types/pkg/istio/kubernetes/networking/v1"
+	istiov1 "github.com/plantoncloud/kubernetes-crd-pulumi-types/pkg/istio/networking/v1"
 	kubernetescorev1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/core/v1"
 	metav1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/meta/v1"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
@@ -11,34 +11,36 @@ import (
 
 const (
 	IstioIngressNamespace = "istio-ingress"
-	//GatewayIdentifierHttps is used as prefix for naming the gateway resource
-	GatewayIdentifierHttps = "jenkins-https"
-	GatewayIdentifierHttp  = "jenkins-http"
 )
 
 func (s *ResourceStack) istioIngress(ctx *pulumi.Context, createdNamespace *kubernetescorev1.Namespace) error {
 	jenkinsKubernetes := s.Input.ApiResource
 
 	_, err := istiov1.NewGateway(ctx, jenkinsKubernetes.Metadata.Id, &istiov1.GatewayArgs{
-		ApiVersion: pulumi.String("networking.istio.io/v1"),
-		Kind:       pulumi.String("Gateway"),
 		Metadata: metav1.ObjectMetaArgs{
 			Name:      pulumi.String(jenkinsKubernetes.Metadata.Id),
 			Namespace: createdNamespace.Metadata.Name(),
 			Labels:    pulumi.ToStringMap(s.KubernetesLabels),
 		},
 		Spec: istiov1.GatewaySpecArgs{
-			Selector: nil, //will need to add map to pulumi-module-commons repo and get it from there
+			//the selector labels map should match the desired istio-ingress deployment.
+			Selector: pulumi.StringMap{
+				"app":   pulumi.String("istio-ingress"),
+				"istio": pulumi.String("ingress"),
+			},
 			Servers: istiov1.GatewaySpecServersArray{
 				&istiov1.GatewaySpecServersArgs{
-					Name: pulumi.String(GatewayIdentifierHttps),
+					Name: pulumi.String("jenkins-https"),
 					Port: &istiov1.GatewaySpecServersPortArgs{
 						Number:   pulumi.Int(443),
-						Name:     pulumi.String(GatewayIdentifierHttps),
+						Name:     pulumi.String("jenkins-https"),
 						Protocol: pulumi.String("HTTPS"),
 					},
 					Hosts: pulumi.StringArray{
-						pulumi.String("coming-soon"), //todo: add external-hostname
+						pulumi.Sprintf("%s.%s", jenkinsKubernetes.Metadata.Id,
+							jenkinsKubernetes.Spec.Ingress.EndpointDomainName),
+						pulumi.Sprintf("%s-internal.%s", jenkinsKubernetes.Metadata.Id,
+							jenkinsKubernetes.Spec.Ingress.EndpointDomainName),
 					},
 					Tls: &istiov1.GatewaySpecServersTlsArgs{
 						CredentialName: pulumi.String("coming-soon"), //todo: create a certificate for jenkins-server
@@ -46,14 +48,17 @@ func (s *ResourceStack) istioIngress(ctx *pulumi.Context, createdNamespace *kube
 					},
 				},
 				&istiov1.GatewaySpecServersArgs{
-					Name: pulumi.String(GatewayIdentifierHttp),
+					Name: pulumi.String("jenkins-http"),
 					Port: &istiov1.GatewaySpecServersPortArgs{
 						Number:   pulumi.Int(80),
-						Name:     pulumi.String(GatewayIdentifierHttp),
+						Name:     pulumi.String("jenkins-http"),
 						Protocol: pulumi.String("HTTP"),
 					},
 					Hosts: pulumi.StringArray{
-						pulumi.String("coming-soon"), //todo: add external-hostname
+						pulumi.Sprintf("%s.%s", jenkinsKubernetes.Metadata.Id,
+							jenkinsKubernetes.Spec.Ingress.EndpointDomainName),
+						pulumi.Sprintf("%s-internal.%s", jenkinsKubernetes.Metadata.Id,
+							jenkinsKubernetes.Spec.Ingress.EndpointDomainName),
 					},
 					Tls: &istiov1.GatewaySpecServersTlsArgs{
 						HttpsRedirect: pulumi.Bool(true),
@@ -68,8 +73,6 @@ func (s *ResourceStack) istioIngress(ctx *pulumi.Context, createdNamespace *kube
 
 	_, err = istiov1.NewVirtualService(ctx, jenkinsKubernetes.Metadata.Id,
 		&istiov1.VirtualServiceArgs{
-			ApiVersion: pulumi.String("networking.istio.io/v1"),
-			Kind:       pulumi.String("VirtualService"),
 			Metadata: metav1.ObjectMetaArgs{
 				Name:      pulumi.String(jenkinsKubernetes.Metadata.Id),
 				Namespace: createdNamespace.Metadata.Name(),
@@ -80,14 +83,19 @@ func (s *ResourceStack) istioIngress(ctx *pulumi.Context, createdNamespace *kube
 					pulumi.Sprintf("%s/%s", IstioIngressNamespace,
 						jenkinsKubernetes.Metadata.Id),
 				},
-				Hosts: nil, //todo: add hostnames
+				Hosts: pulumi.StringArray{
+					pulumi.Sprintf("%s.%s", jenkinsKubernetes.Metadata.Id,
+						jenkinsKubernetes.Spec.Ingress.EndpointDomainName),
+					pulumi.Sprintf("%s-internal.%s", jenkinsKubernetes.Metadata.Id,
+						jenkinsKubernetes.Spec.Ingress.EndpointDomainName),
+				},
 				Http: istiov1.VirtualServiceSpecHttpArray{
 					&istiov1.VirtualServiceSpecHttpArgs{
 						Name: pulumi.String(jenkinsKubernetes.Metadata.Id),
 						Route: istiov1.VirtualServiceSpecHttpRouteArray{
 							&istiov1.VirtualServiceSpecHttpRouteArgs{
 								Destination: istiov1.VirtualServiceSpecHttpRouteDestinationArgs{
-									Host: nil, //todo: add kube-endpoint
+									Host: pulumi.String(""),
 									Port: istiov1.VirtualServiceSpecHttpRouteDestinationPortArgs{
 										Number: pulumi.Int(JenkinsPort),
 									},

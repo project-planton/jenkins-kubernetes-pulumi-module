@@ -6,9 +6,9 @@ replace github.com/plantoncloud/planton-cloud-apis => ../../plantoncloud/planton
 
 replace github.com/plantoncloud-inc/go-commons => ../../plantoncloud-inc/go-commons
 
-replace github.com/plantoncloud/pulumi-module-golang-commons => ../../plantoncloud/pulumi-module-golang-commons
+replace github.com/plantoncloud/stack-job-runner-golang-sdk => ../../plantoncloud/stack-job-runner-golang-sdk
 
-replace github.com/plantoncloud/kubernetes-crd-pulumi-types => ../../plantoncloud/kubernetes-crd-pulumi-types
+replace github.com/plantoncloud/pulumi-module-golang-commons => ../../plantoncloud/pulumi-module-golang-commons
 
 require (
 	github.com/pkg/errors v0.9.1
@@ -18,7 +18,7 @@ require (
 
 require (
 	github.com/plantoncloud-inc/go-commons v0.0.433
-	github.com/plantoncloud/planton-cloud-apis v0.0.211
+	github.com/plantoncloud/planton-cloud-apis v0.0.214
 	github.com/plantoncloud/pulumi-stack-runner-go-sdk v0.0.43
 	github.com/pulumi/pulumi-kubernetes/sdk/v4 v4.15.0
 	github.com/pulumi/pulumi-random/sdk/v4 v4.14.0
@@ -169,9 +169,8 @@ require (
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	github.com/pkg/term v1.1.0 // indirect
-	github.com/plantoncloud/kubernetes-crd-pulumi-types v0.0.0-20240723113230-482a49dded6b // indirect
+	github.com/plantoncloud/kubernetes-crd-pulumi-types v0.0.0-20240724082354-dce2ce0319f5 // indirect
 	github.com/plantoncloud/pulumi-module-golang-commons v0.0.0-20240722171224-c185089f30b0 // indirect
-	github.com/plantoncloud/stack-job-runner-golang-sdk v0.0.52 // indirect
 	github.com/pulumi/appdash v0.0.0-20231130102222-75f619a67231 // indirect
 	github.com/pulumi/esc v0.9.1 // indirect
 	github.com/pulumi/pulumi/pkg/v3 v3.122.0 // indirect
