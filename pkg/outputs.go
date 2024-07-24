@@ -2,7 +2,6 @@ package pkg
 
 import (
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/code2cloud/v1/kubernetes/jenkinskubernetes/model"
-	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/iac/v1/stackjob/enums/stackjoboperationtype"
 	"github.com/plantoncloud/stack-job-runner-golang-sdk/pkg/automationapi/autoapistackoutput"
 	"github.com/pulumi/pulumi/sdk/v3/go/auto"
 )
@@ -20,10 +19,6 @@ const (
 
 func PulumiOutputToStackOutputsConverter(pulumiOutputs auto.OutputMap,
 	input *model.JenkinsKubernetesStackInput) *model.JenkinsKubernetesStackOutputs {
-	if input.StackJob.Spec.OperationType != stackjoboperationtype.StackJobOperationType_apply ||
-		pulumiOutputs == nil {
-		return &model.JenkinsKubernetesStackOutputs{}
-	}
 	return &model.JenkinsKubernetesStackOutputs{
 		Namespace:               autoapistackoutput.GetVal(pulumiOutputs, NamespaceOutputName),
 		AdminUsername:           autoapistackoutput.GetVal(pulumiOutputs, AdminUsernameOutputName),
