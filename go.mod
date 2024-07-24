@@ -4,15 +4,15 @@ go 1.22
 
 replace github.com/plantoncloud/planton-cloud-apis => ../../plantoncloud/planton-cloud-apis
 
-replace github.com/plantoncloud/stack-job-runner-golang-sdk => ../../plantoncloud/stack-job-runner-golang-sdk
-
 replace github.com/plantoncloud-inc/go-commons => ../../plantoncloud-inc/go-commons
 
 replace github.com/plantoncloud/pulumi-module-golang-commons => ../../plantoncloud/pulumi-module-golang-commons
 
+replace github.com/plantoncloud/kubernetes-crd-pulumi-types => ../../plantoncloud/kubernetes-crd-pulumi-types
+
 require (
 	github.com/pkg/errors v0.9.1
-	github.com/pulumi/pulumi/sdk/v3 v3.122.0
+	github.com/pulumi/pulumi/sdk/v3 v3.126.0
 	google.golang.org/grpc v1.63.2 // indirect
 )
 
@@ -20,7 +20,7 @@ require (
 	github.com/plantoncloud-inc/go-commons v0.0.433
 	github.com/plantoncloud/planton-cloud-apis v0.0.211
 	github.com/plantoncloud/pulumi-stack-runner-go-sdk v0.0.43
-	github.com/pulumi/pulumi-kubernetes/sdk/v4 v4.7.1
+	github.com/pulumi/pulumi-kubernetes/sdk/v4 v4.15.0
 	github.com/pulumi/pulumi-random/sdk/v4 v4.14.0
 	istio.io/api v1.22.0
 	istio.io/client-go v1.22.0
