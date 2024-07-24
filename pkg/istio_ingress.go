@@ -22,7 +22,7 @@ func (s *ResourceStack) istioIngress(ctx *pulumi.Context, createdNamespace *kube
 			Metadata: metav1.ObjectMetaArgs{
 				Name:      pulumi.String(jenkinsKubernetes.Metadata.Id),
 				Namespace: createdNamespace.Metadata.Name(),
-				Labels:    pulumi.ToStringMap(s.KubernetesLabels),
+				Labels:    pulumi.ToStringMap(s.Labels),
 			},
 			Spec: certmanagerv1.CertificateSpecArgs{
 				DnsNames: pulumi.StringArray{
@@ -53,7 +53,7 @@ func (s *ResourceStack) istioIngress(ctx *pulumi.Context, createdNamespace *kube
 			Metadata: metav1.ObjectMetaArgs{
 				Name:      pulumi.String(jenkinsKubernetes.Metadata.Id),
 				Namespace: createdNamespace.Metadata.Name(),
-				Labels:    pulumi.ToStringMap(s.KubernetesLabels),
+				Labels:    pulumi.ToStringMap(s.Labels),
 			},
 			Spec: istiov1.GatewaySpecArgs{
 				//the selector labels map should match the desired istio-ingress deployment.
@@ -110,7 +110,7 @@ func (s *ResourceStack) istioIngress(ctx *pulumi.Context, createdNamespace *kube
 			Metadata: metav1.ObjectMetaArgs{
 				Name:      pulumi.String(jenkinsKubernetes.Metadata.Id),
 				Namespace: createdNamespace.Metadata.Name(),
-				Labels:    pulumi.ToStringMap(s.KubernetesLabels),
+				Labels:    pulumi.ToStringMap(s.Labels),
 			},
 			Spec: istiov1.VirtualServiceSpecArgs{
 				Gateways: pulumi.StringArray{
