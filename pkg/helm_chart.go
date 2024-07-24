@@ -1,4 +1,4 @@
-package jenkins
+package pkg
 
 import (
 	"github.com/pkg/errors"
@@ -53,7 +53,7 @@ func getHelmValues(jenkinsKubernetes *model.JenkinsKubernetes,
 			},
 			"resources": containerresources.ConvertToPulumiMap(jenkinsKubernetes.Spec.Container.Resources),
 			"admin": pulumi.Map{
-				"passwordKey":    pulumi.String(AdminPasswordKey),
+				"passwordKey":    pulumi.String(adminPasswordKey),
 				"existingSecret": addedAdminPasswordSecret.Metadata.Name(),
 			},
 		},

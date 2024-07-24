@@ -1,4 +1,4 @@
-package jenkins
+package pkg
 
 import (
 	"github.com/pkg/errors"
@@ -14,7 +14,6 @@ const (
 	//GatewayIdentifierHttps is used as prefix for naming the gateway resource
 	GatewayIdentifierHttps = "jenkins-https"
 	GatewayIdentifierHttp  = "jenkins-http"
-	Port                   = 8080
 )
 
 func (s *ResourceStack) istioIngress(ctx *pulumi.Context, addedNamespace *kubernetescorev1.Namespace) error {
@@ -90,7 +89,7 @@ func (s *ResourceStack) istioIngress(ctx *pulumi.Context, addedNamespace *kubern
 								Destination: istiov1.VirtualServiceSpecHttpRouteDestinationArgs{
 									Host: nil, //todo: add kube-endpoint
 									Port: istiov1.VirtualServiceSpecHttpRouteDestinationPortArgs{
-										Number: pulumi.Int(Port),
+										Number: pulumi.Int(JenkinsPort),
 									},
 								},
 							},

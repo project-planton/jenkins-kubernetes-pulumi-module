@@ -1,7 +1,9 @@
-package jenkins
+package pkg
 
 import (
 	"github.com/pkg/errors"
+	pulumicommonsloadbalancerservice "github.com/plantoncloud/pulumi-module-golang-commons/pkg/kubernetes/loadbalancer/service"
+	"github.com/plantoncloud/pulumi-module-golang-commons/pkg/pulumi/pulumicustomoutput"
 	kubernetescorev1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/core/v1"
 	kubernetesmetav1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/meta/v1"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
@@ -13,8 +15,7 @@ const (
 )
 
 func (s *ResourceStack) loadBalancerIngress(ctx *pulumi.Context, addedNamespace *kubernetescorev1.Namespace) error {
-
-	_, err := kubernetescorev1.NewService(ctx,
+	addedExternalService, err := kubernetescorev1.NewService(ctx,
 		ExternalLoadBalancerServiceName,
 		&kubernetescorev1.ServiceArgs{
 			Metadata: &kubernetesmetav1.ObjectMetaArgs{
@@ -44,7 +45,7 @@ func (s *ResourceStack) loadBalancerIngress(ctx *pulumi.Context, addedNamespace 
 		return errors.Wrapf(err, "failed to create external load balancer service")
 	}
 
-	_, err = kubernetescorev1.NewService(ctx,
+	addedInternalService, err := kubernetescorev1.NewService(ctx,
 		InternalLoadBalancerServiceName,
 		&kubernetescorev1.ServiceArgs{
 			Metadata: &kubernetesmetav1.ObjectMetaArgs{
@@ -76,5 +77,18 @@ func (s *ResourceStack) loadBalancerIngress(ctx *pulumi.Context, addedNamespace 
 	if err != nil {
 		return errors.Wrapf(err, "failed to create external load balancer service")
 	}
+
+	ctx.Export(GetExternalLoadBalancerIp(),
+		pulumi.String(pulumicommonsloadbalancerservice.GetIpAddress(addedExternalService)))
+	ctx.Export(GetInternalLoadBalancerIp(),
+		pulumi.String(pulumicommonsloadbalancerservice.GetIpAddress(addedInternalService)))
 	return nil
+}
+
+func GetExternalLoadBalancerIp() string {
+	return pulumicustomoutput.Name("jenkins-ingress-external-lb-ip")
+}
+
+func GetInternalLoadBalancerIp() string {
+	return pulumicustomoutput.Name("jenkins-ingress-internal-lb-ip")
 }
