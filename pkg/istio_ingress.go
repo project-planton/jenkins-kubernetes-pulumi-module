@@ -97,7 +97,7 @@ func (s *ResourceStack) istioIngress(ctx *pulumi.Context, createdNamespace *kube
 								Destination: istiov1.VirtualServiceSpecHttpRouteDestinationArgs{
 									Host: pulumi.String(""),
 									Port: istiov1.VirtualServiceSpecHttpRouteDestinationPortArgs{
-										Number: pulumi.Int(JenkinsPort),
+										Number: pulumi.Int(8080),
 									},
 								},
 							},

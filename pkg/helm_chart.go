@@ -10,15 +10,9 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-const (
-	ChartRepoUrl = "https://charts.jenkins.io"
-	CharName     = "jenkins"
-	ChartVersion = "5.1.5"
-	ImageTag     = "2.454-jdk17"
-)
-
 func (s *ResourceStack) helmChart(ctx *pulumi.Context,
-	createdNamespace *kubernetescorev1.Namespace, createdAdminPasswordSecret *kubernetescorev1.Secret) error {
+	createdNamespace *kubernetescorev1.Namespace,
+	createdAdminPasswordSecret *kubernetescorev1.Secret) error {
 
 	jenkinsKubernetes := s.Input.ApiResource
 
@@ -26,13 +20,13 @@ func (s *ResourceStack) helmChart(ctx *pulumi.Context,
 
 	// Deploying a Locust Helm chart from the Helm repository.
 	_, err := helmv3.NewChart(ctx, jenkinsKubernetes.Metadata.Id, helmv3.ChartArgs{
-		Chart:     pulumi.String(CharName),
-		Version:   pulumi.String(ChartVersion), // Use the Helm chart version you want to install
+		Chart:     pulumi.String("jenkins"),
+		Version:   pulumi.String("5.1.5"), // Use the Helm chart version you want to install
 		Namespace: createdNamespace.Metadata.Name().Elem(),
 		Values:    helmValues,
 		//if you need to add the repository, you can specify `repo url`:
 		FetchArgs: helmv3.FetchArgs{
-			Repo: pulumi.String(ChartRepoUrl),
+			Repo: pulumi.String("https://charts.jenkins.io"),
 		},
 	}, pulumi.Parent(createdNamespace))
 	if err != nil {
@@ -49,11 +43,11 @@ func getHelmValues(jenkinsKubernetes *model.JenkinsKubernetes,
 		"fullnameOverride": pulumi.String(jenkinsKubernetes.Metadata.Name),
 		"controller": pulumi.Map{
 			"image": pulumi.Map{
-				"tag": pulumi.String(ImageTag),
+				"tag": pulumi.String("2.454-jdk17"),
 			},
 			"resources": containerresources.ConvertToPulumiMap(jenkinsKubernetes.Spec.Container.Resources),
 			"admin": pulumi.Map{
-				"passwordKey":    pulumi.String(adminPasswordKey),
+				"passwordKey":    pulumi.String("jenkins-admin-password"),
 				"existingSecret": createdAdminPasswordSecret.Metadata.Name(),
 			},
 		},

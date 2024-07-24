@@ -3,16 +3,10 @@ package pkg
 import (
 	"encoding/base64"
 	"github.com/pkg/errors"
-	"github.com/plantoncloud/pulumi-module-golang-commons/pkg/pulumi/pulumicustomoutput"
 	kubernetescorev1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/core/v1"
 	metav1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/meta/v1"
 	"github.com/pulumi/pulumi-random/sdk/v4/go/random"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
-)
-
-const (
-	adminPasswordKey = "jenkins-admin-password"
-	adminUsername    = "admin"
 )
 
 func (s *ResourceStack) adminPassword(ctx *pulumi.Context,
@@ -46,23 +40,15 @@ func (s *ResourceStack) adminPassword(ctx *pulumi.Context,
 		&kubernetescorev1.SecretArgs{
 			Metadata: &metav1.ObjectMetaArgs{
 				Name:      pulumi.String(jenkinsKubernetes.Metadata.Name),
-				Namespace: pulumi.String(s.namespace()),
+				Namespace: pulumi.String(jenkinsKubernetes.Metadata.Id),
 			},
 			Data: pulumi.StringMap{
-				adminPasswordKey: base64Password,
+				"jenkins-admin-password": base64Password,
 			},
 		}, pulumi.Parent(createdNamespace))
 
-	ctx.Export(GetAdminUsernameOutputName(), pulumi.String(adminUsername))
-	ctx.Export(GetAdminPasswordSecretOutputName(), createdAdminPasswordSecret.Metadata.Name())
+	ctx.Export(AdminUsernameOutputName, pulumi.String("admin"))
+	ctx.Export(AdminPasswordSecretOutputName, createdAdminPasswordSecret.Metadata.Name())
 
 	return createdAdminPasswordSecret, nil
-}
-
-func GetAdminUsernameOutputName() string {
-	return pulumicustomoutput.Name("jenkins-kubernetes-admin-username")
-}
-
-func GetAdminPasswordSecretOutputName() string {
-	return pulumicustomoutput.Name("jenkins-kubernetes-admin-password-secret-name")
 }

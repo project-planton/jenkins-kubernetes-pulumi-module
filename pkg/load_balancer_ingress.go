@@ -7,25 +7,23 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-const (
-	ExternalLoadBalancerServiceName = "ingress-external-lb"
-	InternalLoadBalancerServiceName = "ingress-internal-lb"
-)
-
 func (s *ResourceStack) loadBalancerIngress(ctx *pulumi.Context,
 	createdNamespace *kubernetescorev1.Namespace) error {
-	jenkinsServer := s.Input.ApiResource
+
+	jenkinsKubernetes := s.Input.ApiResource
 
 	_, err := kubernetescorev1.NewService(ctx,
-		ExternalLoadBalancerServiceName,
+		"ingress-external-lb",
 		&kubernetescorev1.ServiceArgs{
 			Metadata: &kubernetesmetav1.ObjectMetaArgs{
-				Name:      pulumi.String(ExternalLoadBalancerServiceName),
+				Name:      pulumi.String("ingress-external-lb"),
 				Namespace: createdNamespace.Metadata.Name(),
 				Labels:    createdNamespace.Metadata.Labels(),
 				Annotations: pulumi.StringMap{
-					"planton.cloud/endpoint-domain-name":        pulumi.String(jenkinsServer.Spec.Ingress.EndpointDomainName),
-					"external-dns.alpha.kubernetes.io/hostname": pulumi.String(hostname)}},
+					"planton.cloud/endpoint-domain-name": pulumi.String(jenkinsKubernetes.Spec.Ingress.EndpointDomainName),
+					"external-dns.alpha.kubernetes.io/hostname": pulumi.Sprintf("%s.%s",
+						jenkinsKubernetes.Metadata.Id,
+						jenkinsKubernetes.Spec.Ingress.EndpointDomainName)}},
 			Spec: &kubernetescorev1.ServiceSpecArgs{
 				Type: pulumi.String("LoadBalancer"), // Service type is LoadBalancer
 				Ports: kubernetescorev1.ServicePortArray{
@@ -47,16 +45,18 @@ func (s *ResourceStack) loadBalancerIngress(ctx *pulumi.Context,
 	}
 
 	_, err = kubernetescorev1.NewService(ctx,
-		InternalLoadBalancerServiceName,
+		"ingress-internal-lb",
 		&kubernetescorev1.ServiceArgs{
 			Metadata: &kubernetesmetav1.ObjectMetaArgs{
-				Name:      pulumi.String(InternalLoadBalancerServiceName),
+				Name:      pulumi.String("ingress-internal-lb"),
 				Namespace: createdNamespace.Metadata.Name(),
 				Labels:    createdNamespace.Metadata.Labels(),
 				Annotations: pulumi.StringMap{
-					"cloud.google.com/load-balancer-type":       pulumi.String("Internal"),
-					"planton.cloud/endpoint-domain-name":        pulumi.String(jenkinsServer.Spec.Ingress.EndpointDomainName),
-					"external-dns.alpha.kubernetes.io/hostname": pulumi.String(hostname),
+					"cloud.google.com/load-balancer-type": pulumi.String("Internal"),
+					"planton.cloud/endpoint-domain-name":  pulumi.String(jenkinsKubernetes.Spec.Ingress.EndpointDomainName),
+					"external-dns.alpha.kubernetes.io/hostname": pulumi.Sprintf("%s-internal.%s",
+						jenkinsKubernetes.Metadata.Id,
+						jenkinsKubernetes.Spec.Ingress.EndpointDomainName),
 				},
 			},
 			Spec: &kubernetescorev1.ServiceSpecArgs{
