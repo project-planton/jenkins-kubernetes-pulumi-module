@@ -17,7 +17,8 @@ const (
 func (s *ResourceStack) istioIngress(ctx *pulumi.Context, createdNamespace *kubernetescorev1.Namespace) error {
 	jenkinsKubernetes := s.Input.ApiResource
 	addedCertificate, err := certmanagerv1.NewCertificate(ctx,
-		"ingress-certificate", &certmanagerv1.CertificateArgs{
+		"ingress-certificate",
+		&certmanagerv1.CertificateArgs{
 			Metadata: metav1.ObjectMetaArgs{
 				Name:      pulumi.String(jenkinsKubernetes.Metadata.Id),
 				Namespace: createdNamespace.Metadata.Name(),
@@ -46,62 +47,65 @@ func (s *ResourceStack) istioIngress(ctx *pulumi.Context, createdNamespace *kube
 		return errors.Wrap(err, "error creating certificate")
 	}
 
-	_, err = istiov1.NewGateway(ctx, jenkinsKubernetes.Metadata.Id, &istiov1.GatewayArgs{
-		Metadata: metav1.ObjectMetaArgs{
-			Name:      pulumi.String(jenkinsKubernetes.Metadata.Id),
-			Namespace: createdNamespace.Metadata.Name(),
-			Labels:    pulumi.ToStringMap(s.KubernetesLabels),
-		},
-		Spec: istiov1.GatewaySpecArgs{
-			//the selector labels map should match the desired istio-ingress deployment.
-			Selector: pulumi.StringMap{
-				"app":   pulumi.String("istio-ingress"),
-				"istio": pulumi.String("ingress"),
+	_, err = istiov1.NewGateway(ctx,
+		jenkinsKubernetes.Metadata.Id,
+		&istiov1.GatewayArgs{
+			Metadata: metav1.ObjectMetaArgs{
+				Name:      pulumi.String(jenkinsKubernetes.Metadata.Id),
+				Namespace: createdNamespace.Metadata.Name(),
+				Labels:    pulumi.ToStringMap(s.KubernetesLabels),
 			},
-			Servers: istiov1.GatewaySpecServersArray{
-				&istiov1.GatewaySpecServersArgs{
-					Name: pulumi.String("jenkins-https"),
-					Port: &istiov1.GatewaySpecServersPortArgs{
-						Number:   pulumi.Int(443),
-						Name:     pulumi.String("jenkins-https"),
-						Protocol: pulumi.String("HTTPS"),
+			Spec: istiov1.GatewaySpecArgs{
+				//the selector labels map should match the desired istio-ingress deployment.
+				Selector: pulumi.StringMap{
+					"app":   pulumi.String("istio-ingress"),
+					"istio": pulumi.String("ingress"),
+				},
+				Servers: istiov1.GatewaySpecServersArray{
+					&istiov1.GatewaySpecServersArgs{
+						Name: pulumi.String("jenkins-https"),
+						Port: &istiov1.GatewaySpecServersPortArgs{
+							Number:   pulumi.Int(443),
+							Name:     pulumi.String("jenkins-https"),
+							Protocol: pulumi.String("HTTPS"),
+						},
+						Hosts: pulumi.StringArray{
+							pulumi.Sprintf("%s.%s", jenkinsKubernetes.Metadata.Id,
+								jenkinsKubernetes.Spec.Ingress.EndpointDomainName),
+							pulumi.Sprintf("%s-internal.%s", jenkinsKubernetes.Metadata.Id,
+								jenkinsKubernetes.Spec.Ingress.EndpointDomainName),
+						},
+						Tls: &istiov1.GatewaySpecServersTlsArgs{
+							CredentialName: addedCertificate.Spec.SecretName(),
+							Mode:           pulumi.String(v1.ServerTLSSettings_SIMPLE.String()),
+						},
 					},
-					Hosts: pulumi.StringArray{
-						pulumi.Sprintf("%s.%s", jenkinsKubernetes.Metadata.Id,
-							jenkinsKubernetes.Spec.Ingress.EndpointDomainName),
-						pulumi.Sprintf("%s-internal.%s", jenkinsKubernetes.Metadata.Id,
-							jenkinsKubernetes.Spec.Ingress.EndpointDomainName),
-					},
-					Tls: &istiov1.GatewaySpecServersTlsArgs{
-						CredentialName: addedCertificate.Spec.SecretName(),
-						Mode:           pulumi.String(v1.ServerTLSSettings_SIMPLE.String()),
+					&istiov1.GatewaySpecServersArgs{
+						Name: pulumi.String("jenkins-http"),
+						Port: &istiov1.GatewaySpecServersPortArgs{
+							Number:   pulumi.Int(80),
+							Name:     pulumi.String("jenkins-http"),
+							Protocol: pulumi.String("HTTP"),
+						},
+						Hosts: pulumi.StringArray{
+							pulumi.Sprintf("%s.%s", jenkinsKubernetes.Metadata.Id,
+								jenkinsKubernetes.Spec.Ingress.EndpointDomainName),
+							pulumi.Sprintf("%s-internal.%s", jenkinsKubernetes.Metadata.Id,
+								jenkinsKubernetes.Spec.Ingress.EndpointDomainName),
+						},
+						Tls: &istiov1.GatewaySpecServersTlsArgs{
+							HttpsRedirect: pulumi.Bool(true),
+						},
 					},
 				},
-				&istiov1.GatewaySpecServersArgs{
-					Name: pulumi.String("jenkins-http"),
-					Port: &istiov1.GatewaySpecServersPortArgs{
-						Number:   pulumi.Int(80),
-						Name:     pulumi.String("jenkins-http"),
-						Protocol: pulumi.String("HTTP"),
-					},
-					Hosts: pulumi.StringArray{
-						pulumi.Sprintf("%s.%s", jenkinsKubernetes.Metadata.Id,
-							jenkinsKubernetes.Spec.Ingress.EndpointDomainName),
-						pulumi.Sprintf("%s-internal.%s", jenkinsKubernetes.Metadata.Id,
-							jenkinsKubernetes.Spec.Ingress.EndpointDomainName),
-					},
-					Tls: &istiov1.GatewaySpecServersTlsArgs{
-						HttpsRedirect: pulumi.Bool(true),
-					},
-				},
 			},
-		},
-	})
+		})
 	if err != nil {
 		return errors.Wrap(err, "error creating gateway")
 	}
 
-	_, err = istiov1.NewVirtualService(ctx, jenkinsKubernetes.Metadata.Id,
+	_, err = istiov1.NewVirtualService(ctx,
+		jenkinsKubernetes.Metadata.Id,
 		&istiov1.VirtualServiceArgs{
 			Metadata: metav1.ObjectMetaArgs{
 				Name:      pulumi.String(jenkinsKubernetes.Metadata.Id),

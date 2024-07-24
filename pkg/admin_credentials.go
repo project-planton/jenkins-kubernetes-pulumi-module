@@ -14,7 +14,8 @@ func (s *ResourceStack) adminPassword(ctx *pulumi.Context,
 
 	jenkinsKubernetes := s.Input.ApiResource
 
-	createdRandomPassword, err := random.NewRandomPassword(ctx, "admin-password",
+	createdRandomPassword, err := random.NewRandomPassword(ctx,
+		"admin-password",
 		&random.RandomPasswordArgs{
 			Length:     pulumi.Int(12),
 			Special:    pulumi.Bool(true),
@@ -36,7 +37,8 @@ func (s *ResourceStack) adminPassword(ctx *pulumi.Context,
 	}).(pulumi.StringOutput)
 
 	// Create or update the secret
-	createdAdminPasswordSecret, err := kubernetescorev1.NewSecret(ctx, jenkinsKubernetes.Metadata.Name,
+	createdAdminPasswordSecret, err := kubernetescorev1.NewSecret(ctx,
+		jenkinsKubernetes.Metadata.Name,
 		&kubernetescorev1.SecretArgs{
 			Metadata: &metav1.ObjectMetaArgs{
 				Name:      pulumi.String(jenkinsKubernetes.Metadata.Name),

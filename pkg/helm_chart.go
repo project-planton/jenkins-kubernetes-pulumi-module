@@ -19,16 +19,18 @@ func (s *ResourceStack) helmChart(ctx *pulumi.Context,
 	helmValues := getHelmValues(jenkinsKubernetes, createdAdminPasswordSecret)
 
 	// Deploying a Locust Helm chart from the Helm repository.
-	_, err := helmv3.NewChart(ctx, jenkinsKubernetes.Metadata.Id, helmv3.ChartArgs{
-		Chart:     pulumi.String("jenkins"),
-		Version:   pulumi.String("5.1.5"), // Use the Helm chart version you want to install
-		Namespace: createdNamespace.Metadata.Name().Elem(),
-		Values:    helmValues,
-		//if you need to add the repository, you can specify `repo url`:
-		FetchArgs: helmv3.FetchArgs{
-			Repo: pulumi.String("https://charts.jenkins.io"),
-		},
-	}, pulumi.Parent(createdNamespace))
+	_, err := helmv3.NewChart(ctx,
+		jenkinsKubernetes.Metadata.Id,
+		helmv3.ChartArgs{
+			Chart:     pulumi.String("jenkins"),
+			Version:   pulumi.String("5.1.5"), // Use the Helm chart version you want to install
+			Namespace: createdNamespace.Metadata.Name().Elem(),
+			Values:    helmValues,
+			//if you need to add the repository, you can specify `repo url`:
+			FetchArgs: helmv3.FetchArgs{
+				Repo: pulumi.String("https://charts.jenkins.io"),
+			},
+		}, pulumi.Parent(createdNamespace))
 	if err != nil {
 		return errors.Wrap(err, "failed to create helm chart")
 	}

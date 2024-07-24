@@ -26,12 +26,11 @@ func (s *ResourceStack) Resources(ctx *pulumi.Context) error {
 	//create a new descriptive variable for the api-resource in the input.
 	jenkinsKubernetes := s.Input.ApiResource
 
+	//decide on the name of the namespace
 	namespaceName := jenkinsKubernetes.Metadata.Id
 
 	//create namespace resource
 	createdNamespace, err := kubernetescorev1.NewNamespace(ctx, namespaceName, &kubernetescorev1.NamespaceArgs{
-		ApiVersion: pulumi.String("v1"),
-		Kind:       pulumi.String("namespace"),
 		Metadata: metav1.ObjectMetaPtrInput(&metav1.ObjectMetaArgs{
 			Name:   pulumi.String(namespaceName),
 			Labels: pulumi.ToStringMap(s.KubernetesLabels),
@@ -42,17 +41,21 @@ func (s *ResourceStack) Resources(ctx *pulumi.Context) error {
 		return errors.Wrapf(err, "failed to create %s namespace", namespaceName)
 	}
 
+	//export name of the namespace
 	ctx.Export(NamespaceOutputName, createdNamespace.Metadata.Name())
 
+	//create admin-password secret
 	createdAdminPasswordSecret, err := s.adminPassword(ctx, createdNamespace)
 	if err != nil {
 		return errors.Wrap(err, "failed to create admin password resources")
 	}
 
+	//install the jenkins helm-chart
 	if err := s.helmChart(ctx, createdNamespace, createdAdminPasswordSecret); err != nil {
 		return errors.Wrap(err, "failed to create helm-chart resources")
 	}
 
+	//export kube-port-forward command
 	ctx.Export(PortForwardCommandOutputName, pulumi.Sprintf(
 		"kubectl port-forward -n %s service/%s 8080:8080",
 		namespaceName, jenkinsKubernetes.Metadata.Name))
@@ -62,6 +65,8 @@ func (s *ResourceStack) Resources(ctx *pulumi.Context) error {
 		return nil
 	}
 
+	//depending on the ingress-type in the input, create either istio-ingress resources or
+	//create load-balancer resources
 	switch jenkinsKubernetes.Spec.Ingress.IngressType {
 	case kubernetesworkloadingresstype.KubernetesWorkloadIngressType_load_balancer:
 		if err := s.loadBalancerIngress(ctx, createdNamespace); err != nil {
@@ -73,6 +78,7 @@ func (s *ResourceStack) Resources(ctx *pulumi.Context) error {
 		}
 	}
 
+	//export ingress hostnames
 	ctx.Export(IngressExternalHostnameOutputName, pulumi.Sprintf("%s.%s",
 		jenkinsKubernetes.Metadata.Id, jenkinsKubernetes.Spec.Ingress.EndpointDomainName))
 	ctx.Export(IngressInternalHostnameOutputName, pulumi.Sprintf("%s-internal.%s",
