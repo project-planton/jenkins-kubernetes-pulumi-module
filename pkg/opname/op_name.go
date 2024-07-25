@@ -1,4 +1,4 @@
-package vars
+package opname
 
 const (
 	NamespaceOutputName               = "namespace"

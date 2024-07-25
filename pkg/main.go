@@ -2,7 +2,7 @@ package pkg
 
 import (
 	"github.com/pkg/errors"
-	"github.com/plantoncloud/jenkins-kubernetes-pulumi-module/pkg/vars"
+	"github.com/plantoncloud/jenkins-kubernetes-pulumi-module/pkg/opname"
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/code2cloud/v1/kubernetes/jenkinskubernetes/model"
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/commons/kubernetes/enums/kubernetesworkloadingresstype"
 	"github.com/plantoncloud/pulumi-module-golang-commons/pkg/provider/kubernetes/pulumikubernetesprovider"
@@ -43,7 +43,7 @@ func (s *ResourceStack) Resources(ctx *pulumi.Context) error {
 	}
 
 	//export name of the namespace
-	ctx.Export(vars.NamespaceOutputName, createdNamespace.Metadata.Name())
+	ctx.Export(opname.NamespaceOutputName, createdNamespace.Metadata.Name())
 
 	//create admin-password secret
 	createdAdminPasswordSecret, err := s.adminPassword(ctx, createdNamespace)
@@ -57,16 +57,16 @@ func (s *ResourceStack) Resources(ctx *pulumi.Context) error {
 	}
 
 	//export kubernetes service name
-	ctx.Export(vars.ServiceOutputName, pulumi.String(jenkinsKubernetes.Metadata.Name))
+	ctx.Export(opname.ServiceOutputName, pulumi.String(jenkinsKubernetes.Metadata.Name))
 
 	//export kubernetes endpoint
-	ctx.Export(vars.KubeEndpointOutputName,
+	ctx.Export(opname.KubeEndpointOutputName,
 		pulumi.Sprintf("%s.%s.svc.cluster.local.",
 			jenkinsKubernetes.Metadata.Name,
 			namespaceName))
 
 	//export kube-port-forward command
-	ctx.Export(vars.PortForwardCommandOutputName, pulumi.Sprintf(
+	ctx.Export(opname.PortForwardCommandOutputName, pulumi.Sprintf(
 		"kubectl port-forward -n %s service/%s 8080:8080",
 		namespaceName, jenkinsKubernetes.Metadata.Name))
 
@@ -89,9 +89,9 @@ func (s *ResourceStack) Resources(ctx *pulumi.Context) error {
 	}
 
 	//export ingress hostnames
-	ctx.Export(vars.IngressExternalHostnameOutputName, pulumi.Sprintf("%s.%s",
+	ctx.Export(opname.IngressExternalHostnameOutputName, pulumi.Sprintf("%s.%s",
 		jenkinsKubernetes.Metadata.Id, jenkinsKubernetes.Spec.Ingress.EndpointDomainName))
-	ctx.Export(vars.IngressInternalHostnameOutputName, pulumi.Sprintf("%s-internal.%s",
+	ctx.Export(opname.IngressInternalHostnameOutputName, pulumi.Sprintf("%s-internal.%s",
 		jenkinsKubernetes.Metadata.Id, jenkinsKubernetes.Spec.Ingress.EndpointDomainName))
 
 	return nil
