@@ -8,6 +8,7 @@ var vars = struct {
 	HelmChartName                 string
 	HelmChartRepoUrl              string
 	IstioIngressNamespace         string
+	IstioIngressSelectorLabels    map[string]string
 }{
 	JenkinsAdminUsername:          "admin",
 	JenkinsAdminPasswordSecretKey: "jenkins-admin-password",
@@ -16,4 +17,8 @@ var vars = struct {
 	HelmChartName:                 "jenkins",
 	HelmChartRepoUrl:              "https://charts.jenkins.io",
 	IstioIngressNamespace:         "istio-ingress",
+	IstioIngressSelectorLabels: map[string]string{
+		"app":   "istio-ingress",
+		"istio": "ingress",
+	},
 }

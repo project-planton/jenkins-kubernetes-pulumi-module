@@ -50,14 +50,11 @@ func (s *ResourceStack) Resources(ctx *pulumi.Context) error {
 		return errors.Wrap(err, "failed to create helm-chart resources")
 	}
 
-	//no ingress resources required when ingress is not enabled
-	if !locals.JenkinsKubernetes.Spec.Ingress.IsEnabled {
-		return nil
-	}
-
-	//create istio-ingress resources
-	if err := istioIngress(ctx, createdNamespace, s.Labels); err != nil {
-		return errors.Wrap(err, "failed to create istio ingress resources")
+	//create istio-ingress resources if ingress is enabled.
+	if locals.JenkinsKubernetes.Spec.Ingress.IsEnabled {
+		if err := istioIngress(ctx, createdNamespace, s.Labels); err != nil {
+			return errors.Wrap(err, "failed to create istio ingress resources")
+		}
 	}
 
 	return nil

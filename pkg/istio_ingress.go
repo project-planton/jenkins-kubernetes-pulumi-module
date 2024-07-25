@@ -47,10 +47,7 @@ func istioIngress(ctx *pulumi.Context, createdNamespace *kubernetescorev1.Namesp
 			},
 			Spec: istiov1.GatewaySpecArgs{
 				//the selector labels map should match the desired istio-ingress deployment.
-				Selector: pulumi.StringMap{
-					"app":   pulumi.String("istio-ingress"),
-					"istio": pulumi.String("ingress"),
-				},
+				Selector: pulumi.ToStringMap(vars.IstioIngressSelectorLabels),
 				Servers: istiov1.GatewaySpecServersArray{
 					&istiov1.GatewaySpecServersArgs{
 						Name: pulumi.String("jenkins-https"),
