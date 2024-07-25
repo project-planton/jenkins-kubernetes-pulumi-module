@@ -3,6 +3,7 @@ package pkg
 import (
 	"encoding/base64"
 	"github.com/pkg/errors"
+	"github.com/plantoncloud/jenkins-kubernetes-pulumi-module/pkg/vars"
 	kubernetescorev1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/core/v1"
 	metav1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/meta/v1"
 	"github.com/pulumi/pulumi-random/sdk/v4/go/random"
@@ -49,8 +50,8 @@ func (s *ResourceStack) adminPassword(ctx *pulumi.Context,
 			},
 		}, pulumi.Parent(createdNamespace))
 
-	ctx.Export(_var.AdminUsernameOutputName, pulumi.String("admin"))
-	ctx.Export(_var.AdminPasswordSecretOutputName, createdAdminPasswordSecret.Metadata.Name())
+	ctx.Export(vars.AdminUsernameOutputName, pulumi.String("admin"))
+	ctx.Export(vars.AdminPasswordSecretOutputName, createdAdminPasswordSecret.Metadata.Name())
 
 	return createdAdminPasswordSecret, nil
 }
