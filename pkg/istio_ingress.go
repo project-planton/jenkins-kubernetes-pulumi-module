@@ -16,7 +16,7 @@ const (
 
 func (s *ResourceStack) istioIngress(ctx *pulumi.Context, createdNamespace *kubernetescorev1.Namespace) error {
 	jenkinsKubernetes := s.Input.ApiResource
-	addedCertificate, err := certmanagerv1.NewCertificate(ctx,
+	createdCertificate, err := certmanagerv1.NewCertificate(ctx,
 		"ingress-certificate",
 		&certmanagerv1.CertificateArgs{
 			Metadata: metav1.ObjectMetaArgs{
@@ -76,7 +76,7 @@ func (s *ResourceStack) istioIngress(ctx *pulumi.Context, createdNamespace *kube
 								jenkinsKubernetes.Spec.Ingress.EndpointDomainName),
 						},
 						Tls: &istiov1.GatewaySpecServersTlsArgs{
-							CredentialName: addedCertificate.Spec.SecretName(),
+							CredentialName: createdCertificate.Spec.SecretName(),
 							Mode:           pulumi.String(v1.ServerTLSSettings_SIMPLE.String()),
 						},
 					},
@@ -129,7 +129,9 @@ func (s *ResourceStack) istioIngress(ctx *pulumi.Context, createdNamespace *kube
 						Route: istiov1.VirtualServiceSpecHttpRouteArray{
 							&istiov1.VirtualServiceSpecHttpRouteArgs{
 								Destination: istiov1.VirtualServiceSpecHttpRouteDestinationArgs{
-									Host: pulumi.String(""),
+									Host: pulumi.Sprintf("%s.%s.svc.cluster.local.",
+										jenkinsKubernetes.Metadata.Name,
+										createdNamespace.Metadata.Name()),
 									Port: istiov1.VirtualServiceSpecHttpRouteDestinationPortArgs{
 										Number: pulumi.Int(8080),
 									},

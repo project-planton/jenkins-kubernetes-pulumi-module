@@ -55,6 +55,15 @@ func (s *ResourceStack) Resources(ctx *pulumi.Context) error {
 		return errors.Wrap(err, "failed to create helm-chart resources")
 	}
 
+	//export kubernetes service name
+	ctx.Export(ServiceOutputName, pulumi.String(jenkinsKubernetes.Metadata.Name))
+
+	//export kubernetes endpoint
+	ctx.Export(KubeEndpointOutputName,
+		pulumi.Sprintf("%s.%s.svc.cluster.local.",
+			jenkinsKubernetes.Metadata.Name,
+			namespaceName))
+
 	//export kube-port-forward command
 	ctx.Export(PortForwardCommandOutputName, pulumi.Sprintf(
 		"kubectl port-forward -n %s service/%s 8080:8080",
