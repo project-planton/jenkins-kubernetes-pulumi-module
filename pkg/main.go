@@ -2,8 +2,8 @@ package pkg
 
 import (
 	"github.com/pkg/errors"
+	"github.com/plantoncloud/jenkins-kubernetes-pulumi-module/pkg/outputs"
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/code2cloud/v1/kubernetes/jenkinskubernetes/model"
-	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/commons/kubernetes/enums/kubernetesworkloadingresstype"
 	"github.com/plantoncloud/pulumi-module-golang-commons/pkg/provider/kubernetes/pulumikubernetesprovider"
 	kubernetescorev1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/core/v1"
 	metav1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/meta/v1"
@@ -42,7 +42,7 @@ func (s *ResourceStack) Resources(ctx *pulumi.Context) error {
 	}
 
 	//export name of the namespace
-	ctx.Export(NamespaceOutputName, createdNamespace.Metadata.Name())
+	ctx.Export(outputs.Namespace, createdNamespace.Metadata.Name())
 
 	//create admin-password secret
 	createdAdminPasswordSecret, err := s.adminPassword(ctx, createdNamespace)
@@ -56,41 +56,32 @@ func (s *ResourceStack) Resources(ctx *pulumi.Context) error {
 	}
 
 	//export kubernetes service name
-	ctx.Export(ServiceOutputName, pulumi.String(jenkinsKubernetes.Metadata.Name))
+	ctx.Export(outputs.Service, pulumi.String(jenkinsKubernetes.Metadata.Name))
 
 	//export kubernetes endpoint
-	ctx.Export(KubeEndpointOutputName,
+	ctx.Export(outputs.KubeEndpoint,
 		pulumi.Sprintf("%s.%s.svc.cluster.local.",
 			jenkinsKubernetes.Metadata.Name,
 			namespaceName))
 
 	//export kube-port-forward command
-	ctx.Export(PortForwardCommandOutputName, pulumi.Sprintf(
+	ctx.Export(outputs.PortForwardCommand, pulumi.Sprintf(
 		"kubectl port-forward -n %s service/%s 8080:8080",
 		namespaceName, jenkinsKubernetes.Metadata.Name))
 
 	//no ingress resources required when ingress is not enabled
-	if !jenkinsKubernetes.Spec.Ingress.IsEnabled || jenkinsKubernetes.Spec.Ingress.EndpointDomainName == "" {
+	if !jenkinsKubernetes.Spec.Ingress.IsEnabled {
 		return nil
 	}
 
-	//depending on the ingress-type in the input, create either istio-ingress resources or
-	//create load-balancer resources
-	switch jenkinsKubernetes.Spec.Ingress.IngressType {
-	case kubernetesworkloadingresstype.KubernetesWorkloadIngressType_load_balancer:
-		if err := s.loadBalancerIngress(ctx, createdNamespace); err != nil {
-			return errors.Wrap(err, "failed to create load-balancer ingress resources")
-		}
-	case kubernetesworkloadingresstype.KubernetesWorkloadIngressType_ingress_controller:
-		if err := s.istioIngress(ctx, createdNamespace); err != nil {
-			return errors.Wrap(err, "failed to create istio ingress resources")
-		}
+	if err := s.istioIngress(ctx, createdNamespace); err != nil {
+		return errors.Wrap(err, "failed to create istio ingress resources")
 	}
 
 	//export ingress hostnames
-	ctx.Export(IngressExternalHostnameOutputName, pulumi.Sprintf("%s.%s",
+	ctx.Export(outputs.IngressExternalHostname, pulumi.Sprintf("%s.%s",
 		jenkinsKubernetes.Metadata.Id, jenkinsKubernetes.Spec.Ingress.EndpointDomainName))
-	ctx.Export(IngressInternalHostnameOutputName, pulumi.Sprintf("%s-internal.%s",
+	ctx.Export(outputs.IngressInternalHostname, pulumi.Sprintf("%s-internal.%s",
 		jenkinsKubernetes.Metadata.Id, jenkinsKubernetes.Spec.Ingress.EndpointDomainName))
 
 	return nil

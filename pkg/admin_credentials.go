@@ -3,6 +3,7 @@ package pkg
 import (
 	"encoding/base64"
 	"github.com/pkg/errors"
+	"github.com/plantoncloud/jenkins-kubernetes-pulumi-module/pkg/outputs"
 	kubernetescorev1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/core/v1"
 	metav1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/meta/v1"
 	"github.com/pulumi/pulumi-random/sdk/v4/go/random"
@@ -45,12 +46,17 @@ func (s *ResourceStack) adminPassword(ctx *pulumi.Context,
 				Namespace: pulumi.String(jenkinsKubernetes.Metadata.Id),
 			},
 			Data: pulumi.StringMap{
-				"jenkins-admin-password": base64Password,
+				vars.JenkinsAdminPasswordSecretKey: base64Password,
 			},
 		}, pulumi.Parent(createdNamespace))
 
-	ctx.Export(AdminUsernameOutputName, pulumi.String("admin"))
-	ctx.Export(AdminPasswordSecretOutputName, createdAdminPasswordSecret.Metadata.Name())
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create jenkins admin-password secret")
+	}
+
+	//export admin credentials to outputs
+	ctx.Export(outputs.AdminUsername, pulumi.String(vars.JenkinsAdminUsername))
+	ctx.Export(outputs.AdminPasswordSecret, createdAdminPasswordSecret.Metadata.Name())
 
 	return createdAdminPasswordSecret, nil
 }
