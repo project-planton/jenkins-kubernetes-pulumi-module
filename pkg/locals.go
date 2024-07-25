@@ -5,9 +5,9 @@ import (
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/code2cloud/v1/kubernetes/jenkinskubernetes/model"
 )
 
-var locals = &LocalVars{}
+var locals = &Locals{}
 
-type LocalVars struct {
+type Locals struct {
 	IngressCertClusterIssuerName string
 	IngressCertSecretName        string
 	IngressInternalHostname      string
