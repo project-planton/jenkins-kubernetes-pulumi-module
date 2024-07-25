@@ -32,7 +32,7 @@ func helmChart(ctx *pulumi.Context,
 	//merge extra helm values provided in the spec with base values
 	mergemaps.MergeMapToPulumiMap(helmValues, locals.JenkinsKubernetes.Spec.HelmValues)
 
-	//install jenkins-helm chart
+	//install jenkins helm-chart
 	_, err := helmv3.NewChart(ctx,
 		locals.JenkinsKubernetes.Metadata.Id,
 		helmv3.ChartArgs{
@@ -40,7 +40,6 @@ func helmChart(ctx *pulumi.Context,
 			Version:   pulumi.String(vars.HelmChartVersion),
 			Namespace: createdNamespace.Metadata.Name().Elem(),
 			Values:    helmValues,
-			//if you need to add the repository, you can specify `repo url`:
 			FetchArgs: helmv3.FetchArgs{
 				Repo: pulumi.String(vars.HelmChartRepoUrl),
 			},
