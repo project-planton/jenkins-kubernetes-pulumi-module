@@ -49,8 +49,8 @@ func (s *ResourceStack) adminPassword(ctx *pulumi.Context,
 			},
 		}, pulumi.Parent(createdNamespace))
 
-	ctx.Export(AdminUsernameOutputName, pulumi.String("admin"))
-	ctx.Export(AdminPasswordSecretOutputName, createdAdminPasswordSecret.Metadata.Name())
+	ctx.Export(_var.AdminUsernameOutputName, pulumi.String("admin"))
+	ctx.Export(_var.AdminPasswordSecretOutputName, createdAdminPasswordSecret.Metadata.Name())
 
 	return createdAdminPasswordSecret, nil
 }
