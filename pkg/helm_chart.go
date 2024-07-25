@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"github.com/pkg/errors"
+	"github.com/plantoncloud/jenkins-kubernetes-pulumi-module/pkg/locals"
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/code2cloud/v1/kubernetes/jenkinskubernetes/model"
 	"github.com/plantoncloud/pulumi-module-golang-commons/pkg/provider/kubernetes/containerresources"
 	"github.com/plantoncloud/pulumi-module-golang-commons/pkg/provider/kubernetes/helm/mergemaps"
@@ -10,17 +11,15 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-func (s *ResourceStack) helmChart(ctx *pulumi.Context,
+func helmChart(ctx *pulumi.Context,
 	createdNamespace *kubernetescorev1.Namespace,
 	createdAdminPasswordSecret *kubernetescorev1.Secret) error {
 
-	jenkinsKubernetes := s.Input.ApiResource
-
-	helmValues := getHelmValues(jenkinsKubernetes, createdAdminPasswordSecret)
+	helmValues := getHelmValues(locals.JenkinsKubernetes, createdAdminPasswordSecret)
 
 	// Deploying a Locust Helm chart from the Helm repository.
 	_, err := helmv3.NewChart(ctx,
-		jenkinsKubernetes.Metadata.Id,
+		locals.JenkinsKubernetes.Metadata.Id,
 		helmv3.ChartArgs{
 			Chart:     pulumi.String(vars.HelmChartName),
 			Version:   pulumi.String(vars.HelmChartVersion),

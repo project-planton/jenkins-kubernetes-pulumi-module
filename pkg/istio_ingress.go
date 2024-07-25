@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"github.com/pkg/errors"
+	"github.com/plantoncloud/jenkins-kubernetes-pulumi-module/pkg/locals"
 	certmanagerv1 "github.com/plantoncloud/kubernetes-crd-pulumi-types/pkg/certmanager/certmanager/v1"
 	istiov1 "github.com/plantoncloud/kubernetes-crd-pulumi-types/pkg/istio/networking/v1"
 	kubernetescorev1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/core/v1"
@@ -10,26 +11,23 @@ import (
 	v1 "istio.io/api/networking/v1"
 )
 
-func (s *ResourceStack) istioIngress(ctx *pulumi.Context, createdNamespace *kubernetescorev1.Namespace) error {
-	//create variable with descriptive name for the api-resource in the input
-	jenkinsKubernetes := s.Input.ApiResource
-
+func istioIngress(ctx *pulumi.Context, createdNamespace *kubernetescorev1.Namespace,
+	labels map[string]string) error {
 	//create certificate
 	createdCertificate, err := certmanagerv1.NewCertificate(ctx,
 		"ingress-certificate",
 		&certmanagerv1.CertificateArgs{
 			Metadata: metav1.ObjectMetaArgs{
-				Name:      pulumi.String(jenkinsKubernetes.Metadata.Id),
+				Name:      pulumi.String(locals.JenkinsKubernetes.Metadata.Id),
 				Namespace: createdNamespace.Metadata.Name(),
-				Labels:    pulumi.ToStringMap(s.Labels),
+				Labels:    pulumi.ToStringMap(labels),
 			},
 			Spec: certmanagerv1.CertificateSpecArgs{
 				DnsNames:   pulumi.ToStringArray(locals.IngressHostnames),
 				SecretName: pulumi.String(locals.IngressCertSecretName),
 				IssuerRef: certmanagerv1.CertificateSpecIssuerRefArgs{
 					Kind: pulumi.String("ClusterIssuer"),
-
-					Name: pulumi.String(jenkinsKubernetes.Spec.Ingress.EndpointDomainName),
+					Name: pulumi.String(locals.IngressCertClusterIssuerName),
 				},
 			},
 		})
@@ -39,13 +37,13 @@ func (s *ResourceStack) istioIngress(ctx *pulumi.Context, createdNamespace *kube
 
 	//create gateway
 	_, err = istiov1.NewGateway(ctx,
-		jenkinsKubernetes.Metadata.Id,
+		locals.JenkinsKubernetes.Metadata.Id,
 		&istiov1.GatewayArgs{
 			Metadata: metav1.ObjectMetaArgs{
-				Name: pulumi.String(jenkinsKubernetes.Metadata.Id),
+				Name: pulumi.String(locals.JenkinsKubernetes.Metadata.Id),
 				//all istio gateways should be created in istio-ingress deployment namespace
 				Namespace: pulumi.String(vars.IstioIngressNamespace),
-				Labels:    pulumi.ToStringMap(s.Labels),
+				Labels:    pulumi.ToStringMap(labels),
 			},
 			Spec: istiov1.GatewaySpecArgs{
 				//the selector labels map should match the desired istio-ingress deployment.
@@ -88,33 +86,26 @@ func (s *ResourceStack) istioIngress(ctx *pulumi.Context, createdNamespace *kube
 
 	//create virtual-service
 	_, err = istiov1.NewVirtualService(ctx,
-		jenkinsKubernetes.Metadata.Id,
+		locals.JenkinsKubernetes.Metadata.Id,
 		&istiov1.VirtualServiceArgs{
 			Metadata: metav1.ObjectMetaArgs{
-				Name:      pulumi.String(jenkinsKubernetes.Metadata.Id),
+				Name:      pulumi.String(locals.JenkinsKubernetes.Metadata.Id),
 				Namespace: createdNamespace.Metadata.Name(),
-				Labels:    pulumi.ToStringMap(s.Labels),
+				Labels:    pulumi.ToStringMap(labels),
 			},
 			Spec: istiov1.VirtualServiceSpecArgs{
 				Gateways: pulumi.StringArray{
 					pulumi.Sprintf("%s/%s", vars.IstioIngressNamespace,
-						jenkinsKubernetes.Metadata.Id),
+						locals.JenkinsKubernetes.Metadata.Id),
 				},
-				Hosts: pulumi.StringArray{
-					pulumi.Sprintf("%s.%s", jenkinsKubernetes.Metadata.Id,
-						jenkinsKubernetes.Spec.Ingress.EndpointDomainName),
-					pulumi.Sprintf("%s-internal.%s", jenkinsKubernetes.Metadata.Id,
-						jenkinsKubernetes.Spec.Ingress.EndpointDomainName),
-				},
+				Hosts: pulumi.ToStringArray(locals.IngressHostnames),
 				Http: istiov1.VirtualServiceSpecHttpArray{
 					&istiov1.VirtualServiceSpecHttpArgs{
-						Name: pulumi.String(jenkinsKubernetes.Metadata.Id),
+						Name: pulumi.String(locals.JenkinsKubernetes.Metadata.Id),
 						Route: istiov1.VirtualServiceSpecHttpRouteArray{
 							&istiov1.VirtualServiceSpecHttpRouteArgs{
 								Destination: istiov1.VirtualServiceSpecHttpRouteDestinationArgs{
-									Host: pulumi.Sprintf("%s.%s.svc.cluster.local.",
-										jenkinsKubernetes.Metadata.Name,
-										createdNamespace.Metadata.Name()),
+									Host: pulumi.String(locals.KubeServiceFqdn),
 									Port: istiov1.VirtualServiceSpecHttpRouteDestinationPortArgs{
 										Number: pulumi.Int(80),
 									},

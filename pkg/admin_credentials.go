@@ -3,6 +3,7 @@ package pkg
 import (
 	"encoding/base64"
 	"github.com/pkg/errors"
+	"github.com/plantoncloud/jenkins-kubernetes-pulumi-module/pkg/locals"
 	"github.com/plantoncloud/jenkins-kubernetes-pulumi-module/pkg/outputs"
 	kubernetescorev1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/core/v1"
 	metav1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/meta/v1"
@@ -10,10 +11,8 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-func (s *ResourceStack) adminPassword(ctx *pulumi.Context,
+func adminCredentials(ctx *pulumi.Context,
 	createdNamespace *kubernetescorev1.Namespace) (*kubernetescorev1.Secret, error) {
-
-	jenkinsKubernetes := s.Input.ApiResource
 
 	createdRandomPassword, err := random.NewRandomPassword(ctx,
 		"admin-password",
@@ -39,11 +38,11 @@ func (s *ResourceStack) adminPassword(ctx *pulumi.Context,
 
 	// Create or update the secret
 	createdAdminPasswordSecret, err := kubernetescorev1.NewSecret(ctx,
-		jenkinsKubernetes.Metadata.Name,
+		locals.JenkinsKubernetes.Metadata.Name,
 		&kubernetescorev1.SecretArgs{
 			Metadata: &metav1.ObjectMetaArgs{
-				Name:      pulumi.String(jenkinsKubernetes.Metadata.Name),
-				Namespace: pulumi.String(jenkinsKubernetes.Metadata.Id),
+				Name:      pulumi.String(locals.JenkinsKubernetes.Metadata.Name),
+				Namespace: pulumi.String(locals.JenkinsKubernetes.Metadata.Id),
 			},
 			Data: pulumi.StringMap{
 				vars.JenkinsAdminPasswordSecretKey: base64Password,
