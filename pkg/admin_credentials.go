@@ -3,7 +3,6 @@ package pkg
 import (
 	"encoding/base64"
 	"github.com/pkg/errors"
-	"github.com/plantoncloud/jenkins-kubernetes-pulumi-module/pkg/locals"
 	"github.com/plantoncloud/jenkins-kubernetes-pulumi-module/pkg/outputs"
 	kubernetescorev1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/core/v1"
 	metav1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/meta/v1"
@@ -12,6 +11,7 @@ import (
 )
 
 func adminCredentials(ctx *pulumi.Context,
+	locals *Locals,
 	createdNamespace *kubernetescorev1.Namespace) (*kubernetescorev1.Secret, error) {
 
 	createdRandomPassword, err := random.NewRandomPassword(ctx,

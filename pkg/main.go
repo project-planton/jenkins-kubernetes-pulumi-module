@@ -2,7 +2,6 @@ package pkg
 
 import (
 	"github.com/pkg/errors"
-	"github.com/plantoncloud/jenkins-kubernetes-pulumi-module/pkg/locals"
 	"github.com/plantoncloud/jenkins-kubernetes-pulumi-module/pkg/outputs"
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/code2cloud/v1/kubernetes/jenkinskubernetes/model"
 	"github.com/plantoncloud/pulumi-module-golang-commons/pkg/provider/kubernetes/pulumikubernetesprovider"
@@ -17,6 +16,7 @@ type ResourceStack struct {
 }
 
 func (s *ResourceStack) Resources(ctx *pulumi.Context) error {
+	locals := initializeLocals(ctx, s.Input)
 	//create kubernetes-provider from the credential in the stack-input
 	kubernetesProvider, err := pulumikubernetesprovider.GetWithKubernetesClusterCredential(ctx,
 		s.Input.KubernetesClusterCredential)
@@ -25,12 +25,14 @@ func (s *ResourceStack) Resources(ctx *pulumi.Context) error {
 	}
 
 	//create namespace resource
-	createdNamespace, err := kubernetescorev1.NewNamespace(ctx, locals.Namespace, &kubernetescorev1.NamespaceArgs{
-		Metadata: metav1.ObjectMetaPtrInput(&metav1.ObjectMetaArgs{
-			Name:   pulumi.String(locals.Namespace),
-			Labels: pulumi.ToStringMap(s.Labels),
-		}),
-	}, pulumi.Timeouts(&pulumi.CustomTimeouts{Create: "5s", Update: "5s", Delete: "5s"}),
+	createdNamespace, err := kubernetescorev1.NewNamespace(ctx,
+		locals.Namespace,
+		&kubernetescorev1.NamespaceArgs{
+			Metadata: metav1.ObjectMetaPtrInput(&metav1.ObjectMetaArgs{
+				Name:   pulumi.String(locals.Namespace),
+				Labels: pulumi.ToStringMap(s.Labels),
+			}),
+		}, pulumi.Timeouts(&pulumi.CustomTimeouts{Create: "5s", Update: "5s", Delete: "5s"}),
 		pulumi.Provider(kubernetesProvider))
 	if err != nil {
 		return errors.Wrapf(err, "failed to create %s namespace", locals.Namespace)
@@ -40,19 +42,19 @@ func (s *ResourceStack) Resources(ctx *pulumi.Context) error {
 	ctx.Export(outputs.Namespace, createdNamespace.Metadata.Name())
 
 	//create admin-password secret
-	createdAdminPasswordSecret, err := adminCredentials(ctx, createdNamespace)
+	createdAdminPasswordSecret, err := adminCredentials(ctx, locals, createdNamespace)
 	if err != nil {
 		return errors.Wrap(err, "failed to create admin password resources")
 	}
 
 	//install the jenkins helm-chart
-	if err := helmChart(ctx, createdNamespace, createdAdminPasswordSecret); err != nil {
+	if err := helmChart(ctx, locals, createdNamespace, createdAdminPasswordSecret); err != nil {
 		return errors.Wrap(err, "failed to create helm-chart resources")
 	}
 
 	//create istio-ingress resources if ingress is enabled.
 	if locals.JenkinsKubernetes.Spec.Ingress.IsEnabled {
-		if err := istioIngress(ctx, createdNamespace, s.Labels); err != nil {
+		if err := istioIngress(ctx, locals, createdNamespace, s.Labels); err != nil {
 			return errors.Wrap(err, "failed to create istio ingress resources")
 		}
 	}

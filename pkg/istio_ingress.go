@@ -2,7 +2,6 @@ package pkg
 
 import (
 	"github.com/pkg/errors"
-	"github.com/plantoncloud/jenkins-kubernetes-pulumi-module/pkg/locals"
 	certmanagerv1 "github.com/plantoncloud/kubernetes-crd-pulumi-types/pkg/certmanager/certmanager/v1"
 	istiov1 "github.com/plantoncloud/kubernetes-crd-pulumi-types/pkg/istio/networking/v1"
 	kubernetescorev1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/core/v1"
@@ -11,7 +10,9 @@ import (
 	v1 "istio.io/api/networking/v1"
 )
 
-func istioIngress(ctx *pulumi.Context, createdNamespace *kubernetescorev1.Namespace,
+func istioIngress(ctx *pulumi.Context,
+	locals *Locals,
+	createdNamespace *kubernetescorev1.Namespace,
 	labels map[string]string) error {
 	//create certificate
 	createdCertificate, err := certmanagerv1.NewCertificate(ctx,

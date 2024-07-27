@@ -2,7 +2,6 @@ package pkg
 
 import (
 	"github.com/pkg/errors"
-	"github.com/plantoncloud/jenkins-kubernetes-pulumi-module/pkg/locals"
 	"github.com/plantoncloud/pulumi-module-golang-commons/pkg/provider/kubernetes/containerresources"
 	"github.com/plantoncloud/pulumi-module-golang-commons/pkg/provider/kubernetes/helm/mergemaps"
 	kubernetescorev1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/core/v1"
@@ -11,6 +10,7 @@ import (
 )
 
 func helmChart(ctx *pulumi.Context,
+	locals *Locals,
 	createdNamespace *kubernetescorev1.Namespace,
 	createdAdminPasswordSecret *kubernetescorev1.Secret) error {
 
