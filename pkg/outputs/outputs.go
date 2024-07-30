@@ -17,7 +17,7 @@ const (
 	IngressInternalHostname = "ingress-internal-hostname"
 )
 
-func PulumiOutputToStackOutputsConverter(pulumiOutputs auto.OutputMap,
+func PulumiOutputsToStackOutputsConverter(pulumiOutputs auto.OutputMap,
 	input *model.JenkinsKubernetesStackInput) *model.JenkinsKubernetesStackOutputs {
 	return &model.JenkinsKubernetesStackOutputs{
 		Namespace:               autoapistackoutput.GetVal(pulumiOutputs, Namespace),
