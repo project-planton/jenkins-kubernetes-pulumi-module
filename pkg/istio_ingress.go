@@ -20,7 +20,7 @@ func istioIngress(ctx *pulumi.Context,
 		&certmanagerv1.CertificateArgs{
 			Metadata: metav1.ObjectMetaArgs{
 				Name:      pulumi.String(locals.JenkinsKubernetes.Metadata.Id),
-				Namespace: createdNamespace.Metadata.Name(),
+				Namespace: pulumi.String(vars.IstioIngressNamespace),
 				Labels:    pulumi.ToStringMap(labels),
 			},
 			Spec: certmanagerv1.CertificateSpecArgs{
