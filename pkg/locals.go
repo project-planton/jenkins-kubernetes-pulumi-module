@@ -35,7 +35,7 @@ func initializeLocals(ctx *pulumi.Context, stackInput *model.JenkinsKubernetesSt
 	//export kubernetes service name
 	ctx.Export(outputs.Service, pulumi.String(locals.KubeServiceName))
 
-	locals.KubeServiceFqdn = fmt.Sprintf("%s.%s.svc.cluster.local.",
+	locals.KubeServiceFqdn = fmt.Sprintf("%s.%s.svc.cluster.local",
 		jenkinsKubernetes.Metadata.Name, locals.Namespace)
 
 	//export kubernetes endpoint
