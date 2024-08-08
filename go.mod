@@ -2,11 +2,11 @@ module github.com/plantoncloud/jenkins-kubernetes-pulumi-module
 
 go 1.22
 
-replace github.com/plantoncloud/planton-cloud-apis => ../../plantoncloud/planton-cloud-apis
+//replace github.com/plantoncloud/planton-cloud-apis => ../../plantoncloud/planton-cloud-apis
 
-replace github.com/plantoncloud/stack-job-runner-golang-sdk => ../../plantoncloud/stack-job-runner-golang-sdk
+//replace github.com/plantoncloud/stack-job-runner-golang-sdk => ../../plantoncloud/stack-job-runner-golang-sdk
 
-replace github.com/plantoncloud/pulumi-module-golang-commons => ../../plantoncloud/pulumi-module-golang-commons
+//replace github.com/plantoncloud/pulumi-module-golang-commons => ../../plantoncloud/pulumi-module-golang-commons
 
 require (
 	github.com/pkg/errors v0.9.1
@@ -15,10 +15,10 @@ require (
 )
 
 require (
-	github.com/plantoncloud/kubernetes-crd-pulumi-types v0.0.0-20240724082354-dce2ce0319f5
-	github.com/plantoncloud/planton-cloud-apis v0.0.214
-	github.com/plantoncloud/pulumi-module-golang-commons v0.0.0-20240722171224-c185089f30b0
-	github.com/plantoncloud/stack-job-runner-golang-sdk v0.0.52
+	github.com/plantoncloud/kubernetes-crd-pulumi-types v0.0.0-20240728135705-0a8ddbf00a91
+	github.com/plantoncloud/planton-cloud-apis v0.1.0
+	github.com/plantoncloud/pulumi-module-golang-commons v0.0.0-20240808151947-30fe31a468ca
+	github.com/plantoncloud/stack-job-runner-golang-sdk v0.0.56
 	github.com/pulumi/pulumi-kubernetes/sdk/v4 v4.15.0
 	github.com/pulumi/pulumi-random/sdk/v4 v4.16.3
 	istio.io/api v1.22.0
