@@ -1,24 +1,25 @@
 package pkg
 
 var vars = struct {
-	JenkinsAdminUsername          string
-	JenkinsAdminPasswordSecretKey string
-	JenkinsDockerImageTag         string
-	HelmChartVersion              string
-	HelmChartName                 string
-	HelmChartRepoUrl              string
-	IstioIngressNamespace         string
-	IstioIngressSelectorLabels    map[string]string
+	GatewayExternalLoadBalancerServiceHostname string
+	GatewayIngressClassName                    string
+	GatewayInternalLoadBalancerServiceHostname string
+	HelmChartName                              string
+	HelmChartRepoUrl                           string
+	HelmChartVersion                           string
+	IstioIngressNamespace                      string
+	JenkinsAdminPasswordSecretKey              string
+	JenkinsAdminUsername                       string
+	JenkinsDockerImageTag                      string
 }{
-	JenkinsAdminUsername:          "admin",
-	JenkinsAdminPasswordSecretKey: "jenkins-admin-password",
-	JenkinsDockerImageTag:         "2.454-jdk17",
-	HelmChartVersion:              "5.1.5",
+	GatewayExternalLoadBalancerServiceHostname: "ingress-external.istio-ingress.svc.cluster.local",
+	GatewayIngressClassName:                    "istio",
+	GatewayInternalLoadBalancerServiceHostname: "ingress-internal.istio-ingress.svc.cluster.local",
 	HelmChartName:                 "jenkins",
 	HelmChartRepoUrl:              "https://charts.jenkins.io",
+	HelmChartVersion:              "5.1.5",
 	IstioIngressNamespace:         "istio-ingress",
-	IstioIngressSelectorLabels: map[string]string{
-		"app":   "gateway",
-		"istio": "gateway",
-	},
+	JenkinsAdminPasswordSecretKey: "jenkins-admin-password",
+	JenkinsAdminUsername:          "admin",
+	JenkinsDockerImageTag:         "2.454-jdk17",
 }

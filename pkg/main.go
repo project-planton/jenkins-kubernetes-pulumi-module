@@ -54,8 +54,8 @@ func (s *ResourceStack) Resources(ctx *pulumi.Context) error {
 
 	//create istio-ingress resources if ingress is enabled.
 	if locals.JenkinsKubernetes.Spec.Ingress.IsEnabled {
-		if err := istioIngress(ctx, locals, createdNamespace, s.Labels); err != nil {
-			return errors.Wrap(err, "failed to create istio ingress resources")
+		if err := ingress(ctx, locals, createdNamespace, s.Labels); err != nil {
+			return errors.Wrap(err, "failed to create ingress resources")
 		}
 	}
 
