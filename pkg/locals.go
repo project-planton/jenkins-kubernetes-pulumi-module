@@ -3,12 +3,12 @@ package pkg
 import (
 	"fmt"
 	"github.com/plantoncloud/jenkins-kubernetes-pulumi-module/pkg/outputs"
-	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/code2cloud/v1/kubernetes/jenkinskubernetes/model"
+	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/code2cloud/v1/kubernetes/jenkinskubernetes"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
 type Locals struct {
-	JenkinsKubernetes            *model.JenkinsKubernetes
+	JenkinsKubernetes            *jenkinskubernetes.JenkinsKubernetes
 	Namespace                    string
 	IngressCertClusterIssuerName string
 	IngressCertSecretName        string
@@ -20,7 +20,7 @@ type Locals struct {
 	KubePortForwardCommand       string
 }
 
-func initializeLocals(ctx *pulumi.Context, stackInput *model.JenkinsKubernetesStackInput) *Locals {
+func initializeLocals(ctx *pulumi.Context, stackInput *jenkinskubernetes.JenkinsKubernetesStackInput) *Locals {
 	locals := &Locals{}
 	//assign value for the local variable to make it available across the project
 	locals.JenkinsKubernetes = stackInput.ApiResource

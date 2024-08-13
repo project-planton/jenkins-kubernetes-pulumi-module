@@ -1,7 +1,7 @@
 package outputs
 
 import (
-	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/code2cloud/v1/kubernetes/jenkinskubernetes/model"
+	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/code2cloud/v1/kubernetes/jenkinskubernetes"
 	"github.com/plantoncloud/stack-job-runner-golang-sdk/pkg/automationapi/autoapistackoutput"
 	"github.com/pulumi/pulumi/sdk/v3/go/auto"
 )
@@ -18,8 +18,8 @@ const (
 )
 
 func PulumiOutputsToStackOutputsConverter(pulumiOutputs auto.OutputMap,
-	input *model.JenkinsKubernetesStackInput) *model.JenkinsKubernetesStackOutputs {
-	return &model.JenkinsKubernetesStackOutputs{
+	input *jenkinskubernetes.JenkinsKubernetesStackInput) *jenkinskubernetes.JenkinsKubernetesStackOutputs {
+	return &jenkinskubernetes.JenkinsKubernetesStackOutputs{
 		Namespace:               autoapistackoutput.GetVal(pulumiOutputs, Namespace),
 		AdminUsername:           autoapistackoutput.GetVal(pulumiOutputs, AdminUsername),
 		AdminPasswordSecretName: autoapistackoutput.GetVal(pulumiOutputs, AdminPasswordSecret),
