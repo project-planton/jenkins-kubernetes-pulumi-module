@@ -90,12 +90,12 @@ func ingress(ctx *pulumi.Context,
 		return errors.Wrap(err, "error creating gateway")
 	}
 
-	// Create HTTP route
+	//create http-route for setting up https-redirect for external-hostname
 	_, err = gatewayv1.NewHTTPRoute(ctx,
-		"external",
+		"http-external-redirect",
 		&gatewayv1.HTTPRouteArgs{
 			Metadata: metav1.ObjectMetaArgs{
-				Name:      pulumi.String("external"),
+				Name:      pulumi.String("http-external-redirect"),
 				Namespace: createdNamespace.Metadata.Name(),
 				Labels:    pulumi.ToStringMap(labels),
 			},
@@ -103,8 +103,43 @@ func ingress(ctx *pulumi.Context,
 				Hostnames: pulumi.StringArray{pulumi.String(locals.IngressExternalHostname)},
 				ParentRefs: gatewayv1.HTTPRouteSpecParentRefsArray{
 					gatewayv1.HTTPRouteSpecParentRefsArgs{
-						Name:      pulumi.Sprintf("%s-external", locals.JenkinsKubernetes.Metadata.Id),
-						Namespace: createdGateway.Metadata.Namespace(),
+						Name:        pulumi.Sprintf("%s-external", locals.JenkinsKubernetes.Metadata.Id),
+						Namespace:   createdGateway.Metadata.Namespace(),
+						SectionName: pulumi.String("http-external"),
+					},
+				},
+				Rules: gatewayv1.HTTPRouteSpecRulesArray{
+					gatewayv1.HTTPRouteSpecRulesArgs{
+						Filters: gatewayv1.HTTPRouteSpecRulesFiltersArray{
+							gatewayv1.HTTPRouteSpecRulesFiltersArgs{
+								RequestRedirect: gatewayv1.HTTPRouteSpecRulesFiltersRequestRedirectArgs{
+									Scheme:     pulumi.String("https"),
+									StatusCode: pulumi.Int(301),
+								},
+								Type: pulumi.String("RequestRedirect"),
+							},
+						},
+					},
+				},
+			},
+		}, pulumi.Parent(createdNamespace))
+
+	// Create HTTP route for external hostname for https listener
+	_, err = gatewayv1.NewHTTPRoute(ctx,
+		"https-external",
+		&gatewayv1.HTTPRouteArgs{
+			Metadata: metav1.ObjectMetaArgs{
+				Name:      pulumi.String("https-external"),
+				Namespace: createdNamespace.Metadata.Name(),
+				Labels:    pulumi.ToStringMap(labels),
+			},
+			Spec: gatewayv1.HTTPRouteSpecArgs{
+				Hostnames: pulumi.StringArray{pulumi.String(locals.IngressExternalHostname)},
+				ParentRefs: gatewayv1.HTTPRouteSpecParentRefsArray{
+					gatewayv1.HTTPRouteSpecParentRefsArgs{
+						Name:        pulumi.Sprintf("%s-external", locals.JenkinsKubernetes.Metadata.Id),
+						Namespace:   createdGateway.Metadata.Namespace(),
+						SectionName: pulumi.String("https-external"),
 					},
 				},
 				Rules: gatewayv1.HTTPRouteSpecRulesArray{
