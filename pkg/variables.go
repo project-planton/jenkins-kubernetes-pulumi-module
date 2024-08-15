@@ -3,7 +3,6 @@ package pkg
 var vars = struct {
 	GatewayExternalLoadBalancerServiceHostname string
 	GatewayIngressClassName                    string
-	GatewayInternalLoadBalancerServiceHostname string
 	HelmChartName                              string
 	HelmChartRepoUrl                           string
 	HelmChartVersion                           string
@@ -14,12 +13,11 @@ var vars = struct {
 }{
 	GatewayExternalLoadBalancerServiceHostname: "ingress-external.istio-ingress.svc.cluster.local",
 	GatewayIngressClassName:                    "istio",
-	GatewayInternalLoadBalancerServiceHostname: "ingress-internal.istio-ingress.svc.cluster.local",
-	HelmChartName:                 "jenkins",
-	HelmChartRepoUrl:              "https://charts.jenkins.io",
-	HelmChartVersion:              "5.1.5",
-	IstioIngressNamespace:         "istio-ingress",
-	JenkinsAdminPasswordSecretKey: "jenkins-admin-password",
-	JenkinsAdminUsername:          "admin",
-	JenkinsDockerImageTag:         "2.454-jdk17",
+	HelmChartName:                              "jenkins",
+	HelmChartRepoUrl:                           "https://charts.jenkins.io",
+	HelmChartVersion:                           "5.1.5",
+	IstioIngressNamespace:                      "istio-ingress",
+	JenkinsAdminPasswordSecretKey:              "jenkins-admin-password",
+	JenkinsAdminUsername:                       "admin",
+	JenkinsDockerImageTag:                      "2.454-jdk17",
 }
