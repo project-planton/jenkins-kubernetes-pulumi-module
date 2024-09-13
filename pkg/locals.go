@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"github.com/plantoncloud/jenkins-kubernetes-pulumi-module/pkg/outputs"
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/code2cloud/v1/kubernetes/jenkinskubernetes"
+	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/commons/apiresource/enums/apiresourcekind"
+	"github.com/plantoncloud/pulumi-module-golang-commons/pkg/provider/kubernetes/kuberneteslabelkeys"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"strconv"
 )
 
 type Locals struct {
@@ -18,6 +21,7 @@ type Locals struct {
 	KubeServiceFqdn              string
 	KubeServiceName              string
 	KubePortForwardCommand       string
+	Labels                       map[string]string
 }
 
 func initializeLocals(ctx *pulumi.Context, stackInput *jenkinskubernetes.JenkinsKubernetesStackInput) *Locals {
@@ -26,6 +30,14 @@ func initializeLocals(ctx *pulumi.Context, stackInput *jenkinskubernetes.Jenkins
 	locals.JenkinsKubernetes = stackInput.ApiResource
 
 	jenkinsKubernetes := stackInput.ApiResource
+
+	locals.Labels = map[string]string{
+		kuberneteslabelkeys.Environment:  stackInput.ApiResource.Spec.EnvironmentInfo.EnvId,
+		kuberneteslabelkeys.Organization: stackInput.ApiResource.Spec.EnvironmentInfo.OrgId,
+		kuberneteslabelkeys.Resource:     strconv.FormatBool(true),
+		kuberneteslabelkeys.ResourceId:   stackInput.ApiResource.Metadata.Id,
+		kuberneteslabelkeys.ResourceKind: apiresourcekind.ApiResourceKind_jenkins_kubernetes.String(),
+	}
 
 	//decide on the namespace
 	locals.Namespace = jenkinsKubernetes.Metadata.Id
