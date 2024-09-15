@@ -27,15 +27,15 @@ type Locals struct {
 func initializeLocals(ctx *pulumi.Context, stackInput *jenkinskubernetes.JenkinsKubernetesStackInput) *Locals {
 	locals := &Locals{}
 	//assign value for the local variable to make it available across the project
-	locals.JenkinsKubernetes = stackInput.ApiResource
+	locals.JenkinsKubernetes = stackInput.Target
 
-	jenkinsKubernetes := stackInput.ApiResource
+	jenkinsKubernetes := stackInput.Target
 
 	locals.Labels = map[string]string{
-		kuberneteslabelkeys.Environment:  stackInput.ApiResource.Spec.EnvironmentInfo.EnvId,
-		kuberneteslabelkeys.Organization: stackInput.ApiResource.Spec.EnvironmentInfo.OrgId,
+		kuberneteslabelkeys.Environment:  stackInput.Target.Spec.EnvironmentInfo.EnvId,
+		kuberneteslabelkeys.Organization: stackInput.Target.Spec.EnvironmentInfo.OrgId,
 		kuberneteslabelkeys.Resource:     strconv.FormatBool(true),
-		kuberneteslabelkeys.ResourceId:   stackInput.ApiResource.Metadata.Id,
+		kuberneteslabelkeys.ResourceId:   stackInput.Target.Metadata.Id,
 		kuberneteslabelkeys.ResourceKind: apiresourcekind.ApiResourceKind_jenkins_kubernetes.String(),
 	}
 
