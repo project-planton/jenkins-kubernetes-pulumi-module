@@ -11,12 +11,8 @@ vet:
 fmt:
 	go fmt ./...
 
-.PHONY: clean
-clean:
-	rm -rf ${build_dir}
-
 .PHONY: build
-build: clean deps vet fmt test
+build:deps vet fmt test
 
 .PHONY: test
 test:
