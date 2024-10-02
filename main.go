@@ -1,7 +1,7 @@
 package main
 
 import (
-	jenkinskubernetesv1 "buf.build/gen/go/plantoncloud/project-planton/protocolbuffers/go/project/planton/apis/provider/kubernetes/jenkinskubernetes/v1"
+	jenkinskubernetesv1 "buf.build/gen/go/plantoncloud/project-planton/protocolbuffers/go/project/planton/provider/kubernetes/jenkinskubernetes/v1"
 	"github.com/pkg/errors"
 	"github.com/plantoncloud/jenkins-kubernetes-pulumi-module/pkg"
 	"github.com/plantoncloud/pulumi-module-golang-commons/pkg/stackinput"
