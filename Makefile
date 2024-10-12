@@ -20,6 +20,6 @@ test:
 
 .PHONY: update-deps
 update-deps:
-	go get buf.build/gen/go/plantoncloud/project-planton/protocolbuffers/go@latest
-	go get github.com/plantoncloud/pulumi-module-golang-commons@latest
-	go get github.com/plantoncloud/kubernetes-crd-pulumi-types
+	go get buf.build/gen/go/project-planton/apis/protocolbuffers/go@latest
+	go get github.com/project-planton/pulumi-module-golang-commons@latest
+	go get github.com/project-planton/kubernetes-crd-pulumi-types
