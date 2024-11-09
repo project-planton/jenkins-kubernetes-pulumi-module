@@ -2,8 +2,8 @@ package pkg
 
 import (
 	"github.com/pkg/errors"
-	"github.com/project-planton/pulumi-module-golang-commons/pkg/datatypes/stringmaps/mergestringmaps"
-	"github.com/project-planton/pulumi-module-golang-commons/pkg/provider/kubernetes/containerresources"
+	"github.com/project-planton/project-planton/pkg/pulmod/datatypes/stringmaps/mergestringmaps"
+	"github.com/project-planton/project-planton/pkg/pulmod/provider/kubernetes/containerresources"
 	kubernetescorev1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/core/v1"
 	helmv3 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/helm/v3"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
