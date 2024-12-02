@@ -21,7 +21,7 @@ func helmChart(ctx *pulumi.Context,
 			"image": pulumi.Map{
 				"tag": pulumi.String(vars.JenkinsDockerImageTag),
 			},
-			"resources": containerresources.ConvertToPulumiMap(locals.JenkinsKubernetes.Spec.Container.Resources),
+			"resources": containerresources.ConvertToPulumiMap(locals.JenkinsKubernetes.Spec.ContainerResources),
 			"admin": pulumi.Map{
 				"passwordKey":    pulumi.String(vars.JenkinsAdminPasswordSecretKey),
 				"existingSecret": createdAdminPasswordSecret.Metadata.Name(),
